@@ -153,12 +153,12 @@ static void handle_io_work(struct work_struct *work)
 	  for (iov = vbio->iov; iov < &vbio->iov[vbio->nvecs]; iov++) {
 		iov->iov_base = mic_addr_in_host(aper_va, iov->iov_base);
 	  }
-		ret = vfs_writev(vbio->file, vbio->iov, vbio->nvecs, &pos);
+		ret = vfs_writev(vbio->file, vbio->iov, vbio->nvecs, &pos, 0);
 	} else {
 	  for (iov = vbio->iov; iov < &vbio->iov[vbio->nvecs]; iov++) {
 		iov->iov_base = mic_addr_in_host(aper_va, iov->iov_base);
 	  }
-		ret = vfs_readv(vbio->file, vbio->iov, vbio->nvecs, &pos);
+		ret = vfs_readv(vbio->file, vbio->iov, vbio->nvecs, &pos, 0);
 	}
 	status = (ret < 0) ? VIRTIO_BLK_S_IOERR : VIRTIO_BLK_S_OK;
 	if (vbio->head != -1) {
@@ -476,7 +476,7 @@ static long vhost_blk_set_backend(struct vhost_blk *vblk)
 	writel(SECTOR_SIZE, &vb_shared->blk_config.blk_size);
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	ret = vfs_getattr(&vblk->virtblk_file->f_path, &stat);
+	ret = vfs_getattr(&vblk->virtblk_file->f_path, &stat, 0, 0);
 #else
 	ret = vfs_getattr(vblk->virtblk_file->f_path.mnt,
 					  vblk->virtblk_file->f_path.dentry, &stat);

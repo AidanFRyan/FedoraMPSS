@@ -40,7 +40,8 @@
 #include "mic/mic_dma_api.h"
 #include <mic/micscif.h>
 #include <mic/micscif_smpt.h>
-#include <linux/mm_inline.h>
+//#include <linux/mm_inline.h>
+// #include <linux/mm.h>
 
 // constants defined for flash commands for setting PCI aperture
 #define RASMM_DEFAULT_OFFSET 0x4000000
@@ -65,7 +66,7 @@ mic_unpin_user_pages(struct page **pages, uint32_t nf_pages)
 		for (j = 0; j < nf_pages; j++) {
 			if (pages[j]) {
 				SetPageDirty(pages[j]);
-				__page_cache_release(pages[j]);
+				// __page_cache_release(pages[j]);
 			}
 		}
 		kfree(pages);
@@ -90,8 +91,11 @@ mic_pin_user_pages (void *data, struct page **pages, uint32_t len, int32_t *nf_p
 
 	// pin the user pages; use semaphores on linux for doing the same
 	down_read(&current->mm->mmap_sem);
-	*nf_pages = (int32_t)get_user_pages(current, current->mm, (uint64_t)data,
-			  nr_pages, PROT_WRITE, 1, pages, NULL);
+	// *nf_pages = (int32_t)get_user_pages(current, current->mm, (uint64_t)data, nr_pages, PROT_WRITE, 1, pages, NULL);
+	*nf_pages = (int32_t)get_user_pages((uint64_t)data, (uint64_t)nr_pages, PROT_WRITE, pages, NULL);
+	// get_user_pages(unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas);
+	// get_user_pages_locked(unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, int *locked);
+
 	up_read(&current->mm->mmap_sem);
 
 	// compare if the no of final pages is equal to no of requested pages

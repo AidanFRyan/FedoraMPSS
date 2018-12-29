@@ -122,7 +122,7 @@ scif_open(void)
 		kref_init(&(ep->ref_count));
 	return (scif_epd_t)ep;
 }
-EXPORT_SYMBOL(scif_open);
+// EXPORT_SYMBOL(scif_open);
 
 /**
  * scif_close() - Terminate a SCIF end point
@@ -378,7 +378,7 @@ scif_close(scif_epd_t epd)
 	put_kref_count(epd);
 	return 0;
 }
-EXPORT_SYMBOL(scif_close);
+// EXPORT_SYMBOL(scif_close);
 
 /**
  * scif_flush() - Flush the endpoint
@@ -566,7 +566,7 @@ scif_bind(scif_epd_t epd, uint16_t pn)
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_bind);
+// EXPORT_SYMBOL(scif_bind);
 
 /**
  * scif_listen() - Place the end point in the listening state
@@ -644,7 +644,7 @@ scif_listen(scif_epd_t epd, int backlog)
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_listen);
+// EXPORT_SYMBOL(scif_listen);
 
 #ifdef _MIC_SCIF_
 /*
@@ -1015,7 +1015,7 @@ scif_connect(scif_epd_t epd, struct scif_portID *dst)
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_connect);
+// EXPORT_SYMBOL(scif_connect);
 
 /**
  * scif_accept() - Accept a connection request from the remote node
@@ -1268,7 +1268,7 @@ scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t *newepd, int fl
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_accept);
+// EXPORT_SYMBOL(scif_accept);
 
 /*
  * scif_msg_param_check:
@@ -1837,7 +1837,7 @@ scif_send(scif_epd_t epd, void *msg, int len, int flags)
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_send);
+// EXPORT_SYMBOL(scif_send);
 
 /**
  * scif_recv() - Recieve data from connection queue
@@ -1899,7 +1899,7 @@ scif_recv(scif_epd_t epd, void *msg, int len, int flags)
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_recv);
+// EXPORT_SYMBOL(scif_recv);
 
 /**
  * __scif_pin_pages - __scif_pin_pages() pins the physical pages which back
@@ -2055,7 +2055,7 @@ scif_pin_pages(void *addr, size_t len, int prot,
 {
 	return __scif_pin_pages(addr, len, &prot, map_flags, pages);
 }
-EXPORT_SYMBOL(scif_pin_pages);
+// EXPORT_SYMBOL(scif_pin_pages);
 
 /**
  * scif_unpin_pages: Unpin a set of pages
@@ -2087,7 +2087,7 @@ scif_unpin_pages(scif_pinned_pages_t pinned_pages)
 
 	return err;
 }
-EXPORT_SYMBOL(scif_unpin_pages);
+// EXPORT_SYMBOL(scif_unpin_pages);
 
 /**
  * scif_register_pinned_pages: Mark a memory region for remote access.
@@ -2217,7 +2217,7 @@ scif_register_pinned_pages(scif_epd_t epd,
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_register_pinned_pages);
+// EXPORT_SYMBOL(scif_register_pinned_pages);
 
 /**
  * scif_get_pages - Add references to remote registered pages
@@ -2343,7 +2343,7 @@ scif_get_pages(scif_epd_t epd, off_t offset, size_t len, struct scif_range **pag
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_get_pages);
+// EXPORT_SYMBOL(scif_get_pages);
 
 /**
  * scif_put_pages - Remove references from remote registered pages
@@ -2446,7 +2446,7 @@ scif_put_pages(struct scif_range *pages)
 	}
 	return ret;
 }
-EXPORT_SYMBOL(scif_put_pages);
+// EXPORT_SYMBOL(scif_put_pages);
 
 int scif_event_register(scif_callback_t handler)
 {
@@ -2460,7 +2460,7 @@ int scif_event_register(scif_callback_t handler)
 	mutex_unlock(&ms_info.mi_event_cblock);
 	return 0;
 }
-EXPORT_SYMBOL(scif_event_register);
+// EXPORT_SYMBOL(scif_event_register);
 
 int scif_event_unregister(scif_callback_t handler)
 {
@@ -2482,7 +2482,7 @@ int scif_event_unregister(scif_callback_t handler)
 	mutex_unlock(&ms_info.mi_event_cblock);
 	return err;
 }
-EXPORT_SYMBOL(scif_event_unregister);
+// EXPORT_SYMBOL(scif_event_unregister);
 
 /**
  * scif_register - Mark a memory region for remote access.
@@ -2634,7 +2634,7 @@ scif_register(scif_epd_t epd, void *addr, size_t len, off_t offset,
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_register);
+// EXPORT_SYMBOL(scif_register);
 
 /**
  * scif_unregister - Release a memory region registered for remote access.
@@ -2705,7 +2705,7 @@ scif_unregister(scif_epd_t epd, off_t offset, size_t len)
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_unregister);
+// EXPORT_SYMBOL(scif_unregister);
 
 unsigned int scif_pollfd(struct file *f, poll_table *wait, scif_epd_t epd)
 {
@@ -3064,7 +3064,7 @@ scif_readfrom(scif_epd_t epd, off_t loffset, size_t len,
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_readfrom);
+// EXPORT_SYMBOL(scif_readfrom);
 
 /**
  * scif_writeto() - Send SCIF offset data to remote connection
@@ -3088,7 +3088,7 @@ int scif_writeto(scif_epd_t epd, off_t loffset, size_t len,
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_writeto);
+// EXPORT_SYMBOL(scif_writeto);
 
 #define HOST_LOOPB_MAGIC_MARK 0xdead
 
@@ -3166,7 +3166,7 @@ int scif_fence_mark(scif_epd_t epd, int flags, int *mark)
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_fence_mark);
+// EXPORT_SYMBOL(scif_fence_mark);
 
 /**
  * scif_fence_wait:
@@ -3226,7 +3226,7 @@ int scif_fence_wait(scif_epd_t epd, int mark)
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_fence_wait);
+// EXPORT_SYMBOL(scif_fence_wait);
 
 /*
  * scif_fence_signal:
@@ -3320,7 +3320,7 @@ int scif_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval,
 	put_kref_count(epd);
 	return ret;
 }
-EXPORT_SYMBOL(scif_fence_signal);
+// EXPORT_SYMBOL(scif_fence_signal);
 
 /**
  * scif_get_nodeIDs - Return information about online nodes
@@ -3359,7 +3359,7 @@ scif_get_nodeIDs(uint16_t *nodes, int len, uint16_t *self)
 	return online;
 }
 
-EXPORT_SYMBOL(scif_get_nodeIDs);
+// EXPORT_SYMBOL(scif_get_nodeIDs);
 
 /**
  * micscif_pci_dev:
@@ -3444,7 +3444,7 @@ int scif_pci_info(uint16_t node, struct scif_pci_info *dev)
 	return micscif_pci_info(node, dev);
 #endif
 }
-EXPORT_SYMBOL(scif_pci_info);
+// EXPORT_SYMBOL(scif_pci_info);
 
 /*
  * DEBUG helper functions

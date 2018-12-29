@@ -778,7 +778,7 @@ mic_load_file(const char* fn, uint8_t* buffer, uint32_t max_size)
 		goto cleanup_filp;
 	}
 
-	c = vfs_read(filp, buffer, filp_size, &pos);
+	c = kernel_read(filp, buffer, filp_size, &pos);
 	if(c != (long)filp_size) {
 		status = -1; //FIXME
 		goto cleanup_filp;

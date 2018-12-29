@@ -70,7 +70,7 @@ static const struct mmu_notifier_ops scif_mmu_notifier_ops = {
 	.release = scif_mmu_notifier_release,
 	.clear_flush_young = NULL,
 	.change_pte = NULL,/*TODO*/
-	.invalidate_page = scif_mmu_notifier_invalidate_page,
+	// .invalidate_page = scif_mmu_notifier_invalidate_page,
 	.invalidate_range_start = scif_mmu_notifier_invalidate_range_start,
 	.invalidate_range_end = scif_mmu_notifier_invalidate_range_end};
 
@@ -413,7 +413,7 @@ int micscif_destroy_pinned_pages(struct scif_pinned_pages *pinned_pages)
 				BUG_ON(!page_count(pinned_pages->pages[j]));
 				BUG_ON(atomic_long_sub_return(1, &ms_info.rma_pin_cnt) < 0);
 #endif
-				page_cache_release(pinned_pages->pages[j]);
+				// page_cache_release(pinned_pages->pages[j]);
 			}
 		}
 	}

@@ -1982,12 +1982,9 @@ retry:
 		}
 
 		pinned_pages->nr_pages = get_user_pages(
-				current,
-				mm,
 				(uint64_t)addr,
-				nr_pages,
+				(uint64_t)nr_pages,
 				!!(prot & SCIF_PROT_WRITE),
-				0,
 				pinned_pages->pages,
 				pinned_pages->vma);
 		up_write(&mm->mmap_sem);
@@ -2005,10 +2002,10 @@ retry:
 						&ms_info.rma_mm_cnt) < 0);
 #endif
 				/* Roll back any pinned pages */
-				for (i = 0; i < pinned_pages->nr_pages; i++) {
-					if (pinned_pages->pages[i])
-						page_cache_release(pinned_pages->pages[i]);
-				}
+				// for (i = 0; i < pinned_pages->nr_pages; i++) {
+				// 	if (pinned_pages->pages[i])
+				// 		page_cache_release(pinned_pages->pages[i]);
+				// }
 				prot &= ~SCIF_PROT_WRITE;
 				try_upgrade = false;
 				goto retry;
@@ -2436,13 +2433,13 @@ scif_put_pages(struct scif_range *pages)
 	int ret;
 	struct reg_range_t *window = pages->cookie;
 	struct endpt *ep = (struct endpt *)window->ep;
-	if (atomic_read(&(&(ep->ref_count))->refcount) > 0) {
+	if (atomic_read((atomic_t*) &(&(ep->ref_count))->refcount) > 0) {
 		kref_get(&(ep->ref_count));
 	} else {
 		WARN_ON(1);
 	}
 	ret = __scif_put_pages(pages);
-	if (atomic_read(&(&(ep->ref_count))->refcount) > 0) {
+	if (atomic_read((atomic_t*) &(&(ep->ref_count))->refcount) > 0) {
 		kref_put(&(ep->ref_count), scif_ref_rel);
 	} else {
 		//WARN_ON(1);

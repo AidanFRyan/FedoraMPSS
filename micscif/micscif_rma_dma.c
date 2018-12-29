@@ -39,6 +39,7 @@
 #include "mic/micscif_kmem_cache.h"
 #include "mic/micscif_rma.h"
 #include "mic/micscif_rma_list.h"
+#include <linux/nmi.h>
 #if !defined(WINDOWS) && !defined(CONFIG_PREEMPT)
 #include <linux/sched.h>
 #endif

@@ -34,7 +34,7 @@
  */
 
 #include "mic_common.h"
-#include "scif.h"
+#include <scif.h>
 #include "mic/micscif.h"
 #include "mic/mic_pm.h"
 #include "mic/micveth.h"

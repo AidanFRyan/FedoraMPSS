@@ -45,7 +45,7 @@
 #include <linux/hugetlb.h>
 #endif
 #endif
-#include "scif.h"
+#include <scif.h>
 #include <linux/errno.h>
 #include <linux/hardirq.h>
 #include <linux/types.h>
@@ -82,6 +82,7 @@
 #include <linux/syscalls.h>
 #include <linux/pci.h>
 #include "mic/micscif_kmem_cache.h"
+#include <linux/sched/mm.h>
 
 
 struct rma_mmu_notifier {

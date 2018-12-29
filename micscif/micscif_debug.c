@@ -37,7 +37,7 @@
 #ifndef _MIC_SCIF_
 #include "mic_common.h"
 #endif
-#include "scif.h"
+#include <scif.h>
 #include <linux/proc_fs.h>
 #include <linux/debugfs.h>
 

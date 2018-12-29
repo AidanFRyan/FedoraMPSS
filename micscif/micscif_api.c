@@ -39,7 +39,7 @@
 #include <linux/sched.h>
 #include <linux/kref.h>
 #include <linux/module.h>
-#include "scif.h"
+#include <scif.h>
 #include "mic/micscif.h"
 #ifndef _MIC_SCIF_
 #include "mic_common.h"

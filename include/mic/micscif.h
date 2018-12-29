@@ -79,7 +79,7 @@
 #endif /* MODULE_SCIF */
 
 #include <linux/notifier.h>
-#include "scif.h"
+#include <scif.h>
 #include "mic/micbaseaddressdefine.h"
 #include "mic/micsboxdefine.h"
 
@@ -96,7 +96,7 @@
 #endif
 
 //#define P2P_HACK 0
-#include "scif.h"
+#include <scif.h>
 #include "scif_ioctl.h"
 
 #define SCIF_READY_MAGIC_NUM 0x1eedfee0

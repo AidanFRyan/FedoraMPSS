@@ -1,0 +1,1 @@
+cmd_/home/aidan/mpss-modules-3.8.4/mic.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/aidan/mpss-modules-3.8.4/mic.ko /home/aidan/mpss-modules-3.8.4/mic.o /home/aidan/mpss-modules-3.8.4/mic.mod.o ;  true

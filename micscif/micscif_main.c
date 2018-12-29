@@ -109,7 +109,7 @@ static struct notifier_block mic_deviceevent = {
 };
 #endif
 
-static int micscif_open(struct inode *in, struct file *f)
+static int micscifm_open(struct inode *in, struct file *f)
 {
 	dev_t dev = in->i_rdev;
 
@@ -286,7 +286,7 @@ struct file_operations micscif_ops = {
 	.mmap = micscif_mmap,
 	.poll = micscif_poll,
 	.flush = micscif_flush,
-	.open  = micscif_open,
+	.open  = micscifm_open,
 	.release = micscif_release,
 };
 

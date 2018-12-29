@@ -39,7 +39,7 @@
 #include <linux/err.h>
 #include <micint.h>
 
-#include <scif.h>
+#include "scif.h"
 #include <mic_common.h>
 
 #define ACPT_BACKLOG 120
@@ -109,8 +109,8 @@ void acptboot_getconn(struct work_struct *work)
 	}
 
 close_epd:
-	if ((err = scif_close(conn_epd)))
-		printk(KERN_ERR "ACPTBOOT: scif_close failed %d\n", err);
+	if ((err = scifm_close(conn_epd)))
+		printk(KERN_ERR "ACPTBOOT: scifm_close failed %d\n", err);
 
 //requeue_accept:
 	queue_work(acptboot_data->acptbootwq, &acptboot_data->acptbootwork);
@@ -121,8 +121,8 @@ void acptboot_exit(void)
 	int err = 0;
 	if (acptboot_data) {
 		if (acptboot_data->listen_epd)
-			if ((err = scif_close(acptboot_data->listen_epd)) < 0)
-				pr_debug("scif_close failed %d\n", err);
+			if ((err = scifm_close(acptboot_data->listen_epd)) < 0)
+				pr_debug("scifm_close failed %d\n", err);
 		destroy_workqueue(acptboot_data->acptbootwq);
 
 		kfree(acptboot_data);
@@ -141,25 +141,25 @@ acptboot_init(void)
 		return -ENOMEM;
 	}
 
-	acptboot_data->listen_epd = scif_open();
+	acptboot_data->listen_epd = scifm_open();
 
 	if (!acptboot_data->listen_epd) {
-		printk(KERN_ERR "ACPTBOOT: scif_open() failed!\n");
+		printk(KERN_ERR "ACPTBOOT: scifm_open() failed!\n");
 		err = -ENOMEM;
 		goto error;
 	}
 
-	err = scif_bind(acptboot_data->listen_epd, MIC_NOTIFY);
+	err = scifm_bind(acptboot_data->listen_epd, MIC_NOTIFY);
 	if (err < 0) {
-		pr_debug("ACPTBOOT: scif_bind() failed! %d\n", err);
+		pr_debug("ACPTBOOT: scifm_bind() failed! %d\n", err);
 		goto error;
 	}
 
 	acptboot_data->acptboot_pn = err;
 
-	err = scif_listen(acptboot_data->listen_epd, ACPT_BACKLOG);
+	err = scifm_listen(acptboot_data->listen_epd, ACPT_BACKLOG);
 	if (err < 0) {
-		pr_debug("scif_listen() failed! %d\n", err);
+		pr_debug("scifm_listen() failed! %d\n", err);
 		goto error;
 
 	}
@@ -184,8 +184,8 @@ acptboot_init(void)
 error:
 
 	if (acptboot_data->listen_epd)
-		if ((ret = scif_close(acptboot_data->listen_epd)) < 0)
-			pr_debug("ACPTBOOT: scif_close() failed! %d\n", ret);
+		if ((ret = scifm_close(acptboot_data->listen_epd)) < 0)
+			pr_debug("ACPTBOOT: scifm_close() failed! %d\n", ret);
 
 	kfree(acptboot_data);
 

@@ -136,21 +136,21 @@ int open_scif_channels(void)
 		return 0;
 	}
 	// Data channel
-	if ((mictc_epd_data = scif_open()) == SCIF_OPEN_FAILED) {
-		fprintf(stderr, "scif_open failed with ENOMEM\n", errno);
+	if ((mictc_epd_data = scifm_open()) == SCIF_OPEN_FAILED) {
+		fprintf(stderr, "scifm_open failed with ENOMEM\n", errno);
 		return 0;
 	}
 
-	if (scif_bind(mictc_epd_data, MICTC_SCIF_PORT_DATA) == -1) {
-		fprintf(stderr, "scif_bind failed with error %d\n", errno);
+	if (scifm_bind(mictc_epd_data, MICTC_SCIF_PORT_DATA) == -1) {
+		fprintf(stderr, "scifm_bind failed with error %d\n", errno);
 		return 0;
 	}
 
 	portID_data.node = 1;
 	portID_data.port = MICTC_SCIF_PORT_DATA;
 
-	if (scif_listen(mictc_epd_data, 1) == -1) {
-		fprintf(stderr, "scif_listen failed with error %d\n", errno);
+	if (scifm_listen(mictc_epd_data, 1) == -1) {
+		fprintf(stderr, "scifm_listen failed with error %d\n", errno);
 		return 0;
 	}
 
@@ -330,12 +330,12 @@ int open_scif_channels(void)
 		sleep(2);
 		scif_munmap(g_mictc_buffer_offset_xml, MICTC_XML_BUFFER_SIZE);
 		scif_unregister(mictc_newepd, (off_t) g_mictc_buffer_base, MICTC_MEM_BUFFER_SIZE);
-		scif_close(mictc_newepd);
+		scifm_close(mictc_newepd);
 	} // while (1)
  close:
 	scif_munmap(g_mictc_buffer_offset_xml, MICTC_XML_BUFFER_SIZE);
-	scif_close(mictc_newepd);
-	scif_close(mictc_epd_data);
+	scifm_close(mictc_newepd);
+	scifm_close(mictc_epd_data);
 	free(g_mictc_buffer_base);
 	return 1;
 }

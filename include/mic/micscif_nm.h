@@ -36,7 +36,7 @@
 #ifndef MICSCIF_NM_H
 #define MICSCIF_NM_H
 
-#include <scif.h>
+#include "scif.h"
 
 #ifdef MIC_IS_EMULATION
 #define DEFAULT_WATCHDOG_TO	(INT_MAX)

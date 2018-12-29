@@ -52,7 +52,7 @@ scif_fdopen(struct file *f)
 		return -ENOMEM;
 
 	/* SCIF device */
-	if (!(priv->epd = __scif_open())) {
+	if (!(priv->epd = __scifm_open())) {
 		kfree(priv);
 		return -ENOMEM;
 	}
@@ -71,7 +71,7 @@ scif_fdclose(struct file *f)
 	 * count is greater than 1.  This accounts for the fork() issue.
 	 */
 	if (atomic64_read(&f->f_count) == 0) {
-		err = __scif_close(priv->epd);
+		err = __scifm_close(priv->epd);
 		kfree(priv);
 	}
 	return err;
@@ -149,7 +149,7 @@ scif_process_ioctl(struct file *f, unsigned int cmd, uint64_t arg)
 			return -EFAULT;
 		}
 
-		if ((pn = __scif_bind(priv->epd, pn)) < 0) {
+		if ((pn = __scifm_bind(priv->epd, pn)) < 0) {
 			return pn;
 		}
 
@@ -160,7 +160,7 @@ scif_process_ioctl(struct file *f, unsigned int cmd, uint64_t arg)
 		return 0;
 	}
 	case SCIF_LISTEN:
-		return __scif_listen(priv->epd, arg);
+		return __scifm_listen(priv->epd, arg);
 	case SCIF_CONNECT:
 	{
 		struct scifioctl_connect req;
@@ -203,7 +203,7 @@ scif_process_ioctl(struct file *f, unsigned int cmd, uint64_t arg)
 		}
 
 		if (copy_to_user(argp, &request, sizeof(struct scifioctl_accept))) {
-			scif_close(*ep);
+			scifm_close(*ep);
 			return -EFAULT;
 		}
 

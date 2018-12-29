@@ -267,12 +267,12 @@ typedef struct portID portID_t;
 /* End: Deprecated Temporary definition for compatability */
 
 /**
- * scif_open - Create an endpoint
+ * scifm_open - Create an endpoint
  *
  *\return
- * The scif_open() function creates a new endpoint.
+ * The scifm_open() function creates a new endpoint.
  *
- * Upon successful completion, scif_open() returns an endpoint descriptor to
+ * Upon successful completion, scifm_open() returns an endpoint descriptor to
  * be used in subsequent SCIF functions calls to refer to that endpoint;
  * otherwise: in user mode SCIF_OPEN_FAILED (that is ((scif_epd_t)-1)) is
  * returned and errno is set to indicate the error; in kernel mode a NULL
@@ -284,21 +284,21 @@ typedef struct portID portID_t;
  *- ENXIO
  * - Version mismatch between micscif driver and libscif.
  */
-scif_epd_t scif_open(void);
+scif_epd_t scifm_open(void);
 
 /**
  * scif _bind - Bind an endpoint to a port
  *	\param epd			endpoint descriptor
  *	\param pn			port number
  *
- * scif_bind() binds endpoint epd to port pn, where pn is a port number on the
+ * scifm_bind() binds endpoint epd to port pn, where pn is a port number on the
  * local node. If pn is zero, a port number greater than or equal to
  * SCIF_PORT_RSVD is assigned and returned. Each endpoint may be bound to
  * exactly one local port. Ports less than 1024 when requested can only be bound
  * by system (or root) processes or by processes executed by privileged users.
  *
  *\return
- * Upon successful completion, scif_bind() returns the port number to which epd
+ * Upon successful completion, scifm_bind() returns the port number to which epd
  * is bound; otherwise: in user mode -1 is returned and errno is set to
  * indicate the error; in kernel mode the negative of one of the following
  * errors is returned.
@@ -318,15 +318,15 @@ scif_epd_t scif_open(void);
  *- EACCES
  * - The port requested is protected and the user is not the superuser.
 */
-int scif_bind(scif_epd_t epd, uint16_t pn);
+int scifm_bind(scif_epd_t epd, uint16_t pn);
 
 /**
- * scif_listen - Listen for connections on an endpoint
+ * scifm_listen - Listen for connections on an endpoint
  *
  *	\param epd		endpoint descriptor
  *	\param backlog		maximum pending connection requests
  *
- * scif_listen() marks the endpoint epd as a listening endpoint - that is, as
+ * scifm_listen() marks the endpoint epd as a listening endpoint - that is, as
  * an endpoint that will be used to accept incoming connection requests. Once
  * so marked, the endpoint is said to be in the listening state and may not be
  * used as the endpoint of a connection.
@@ -339,7 +339,7 @@ int scif_bind(scif_epd_t epd, uint16_t pn);
  * the connection was refused.
  *
  *\return
- * Upon successful completion, scif_listen() returns 0; otherwise: in user mode
+ * Upon successful completion, scifm_listen() returns 0; otherwise: in user mode
  * -1 is returned and errno is set to indicate the error; in kernel mode the
  * negative of one of the following errors is returned.
  *
@@ -354,7 +354,7 @@ int scif_bind(scif_epd_t epd, uint16_t pn);
  *- ENOTTY
  * - epd is not a valid endpoint descriptor
 */
-int scif_listen(scif_epd_t epd, int backlog);
+int scifm_listen(scif_epd_t epd, int backlog);
 
 /**
  * scif_connect - Initiate a connection on a port
@@ -369,7 +369,7 @@ int scif_listen(scif_epd_t epd, int backlog);
  * will bind it to an unused local port.
  *
  * A connection is terminated when an endpoint of the connection is closed,
- * either explicitly by scif_close(), or when a process that owns one of the
+ * either explicitly by scifm_close(), or when a process that owns one of the
  * endpoints of a connection is terminated.
  *
  *\return
@@ -476,10 +476,10 @@ int scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
 *newepd, int flags);
 
 /**
- * scif_close - Close an endpoint
+ * scifm_close - Close an endpoint
  *	\param epd	endpoint descriptor
  *
- * scif_close() closes an endpoint and performs necessary teardown of
+ * scifm_close() closes an endpoint and performs necessary teardown of
  * facilities associated with that endpoint.
  *
  * If epd is a listening endpoint then it will no longer accept connection
@@ -488,7 +488,7 @@ int scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
  *
  * If epd is a connected endpoint, then its peer endpoint is also closed. RMAs
  * which are in-process through epd or its peer endpoint will complete before
- * scif_close() returns. Registered windows of the local and peer endpoints are
+ * scifm_close() returns. Registered windows of the local and peer endpoints are
  * released as if scif_unregister() was called against each window.
  *
  * Closing an endpoint does not affect mappings to remote memory. These remain
@@ -504,7 +504,7 @@ int scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
  * epd is freed and may no longer be accessed.
  *
  *\return
- * Upon successful completion, scif_close() returns 0; otherwise: in user mode
+ * Upon successful completion, scifm_close() returns 0; otherwise: in user mode
  * -1 is returned and errno is set to indicate the error; in kernel mode the
  * negative of one of the following errors is returned.
  *
@@ -514,7 +514,7 @@ int scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
  *- EINVAL
  * - epd is not a valid endpoint descriptor
  */
-int scif_close(scif_epd_t epd);
+int scifm_close(scif_epd_t epd);
 
 /**
  * scif_send - Send a message
@@ -564,7 +564,7 @@ int scif_close(scif_epd_t epd);
  *- EFAULT
  * - An invalid address was specified for a parameter.
  *- EINTR
- * - epd was closed by scif_close()
+ * - epd was closed by scifm_close()
  *- EINVAL
  * - epd is not a valid endpoint descriptor, or
  * - flags is invalid
@@ -1514,7 +1514,7 @@ scif_register_pinned_pages(
  * is returned in a call to scif_put_pages(). The scif_range structure returned
  * by scif_get_pages() must be unmodified.
  *
- * It is an error to call scif_close() on an endpoint on which a scif_range
+ * It is an error to call scifm_close() on an endpoint on which a scif_range
  * structure of that endpoint has not been returned to scif_put_pages().
  *
  *\return
@@ -1658,7 +1658,7 @@ scif_poll(
  *  node. Upon being called, and before returning, the event handler must
  *  return, using scif_put_pages(), all structures obtained using
  *  scif_get_pages() against an endpoint connected to the lost node. It is
- *  recommended and expected that the handler will also scif_close() all
+ *  recommended and expected that the handler will also scifm_close() all
  *  endpoints connected to the lost node.
  *
  *\return

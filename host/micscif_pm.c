@@ -34,7 +34,7 @@
  */
 
 #include "mic_common.h"
-#include <scif.h>
+#include "scif.h"
 #include "mic/micscif.h"
 #include "mic/mic_pm.h"
 #include "mic/micveth.h"
@@ -503,7 +503,7 @@ mic_pm_accept_work(struct work_struct *work)
 		/* Reject connection request from HOST itself */
 		PM_DEBUG("PM: Peer node cannot be HOST. Peer Node = %d Peer Port = %d",
 				newepd->peer.node, newepd->peer.port);
-		scif_close(newepd);
+		scifm_close(newepd);
 		mutex_unlock(&mic_data.dd_pm.pm_accept_mutex);
 		goto continue_accepting;
 	}
@@ -519,7 +519,7 @@ mic_pm_accept_work(struct work_struct *work)
 					PM_DEBUG("Peer Node = %d, Peer Port = %d\n",
 						    mic_ctx->micpm_ctx.pm_epd->peer.node,
 						    mic_ctx->micpm_ctx.pm_epd->peer.port);
-					scif_close(newepd);
+					scifm_close(newepd);
 					mutex_unlock(&mic_data.dd_pm.pm_accept_mutex);
 					goto continue_accepting;
 				}
@@ -762,22 +762,22 @@ int micpm_init()
 	int con_port;
 	int err = 0;
 
-	epd = scif_open();
+	epd = scifm_open();
 	if (epd == SCIF_OPEN_FAILED || epd == NULL) {
-		PM_DEBUG("scif_open failed\n");
+		PM_DEBUG("scifm_open failed\n");
 		return -1;
 	}
 
-	if ((con_port = scif_bind(epd, SCIF_PM_PORT_0)) < 0) {
-		PM_DEBUG("scif_bind to port failed with error %d\n", con_port);
+	if ((con_port = scifm_bind(epd, SCIF_PM_PORT_0)) < 0) {
+		PM_DEBUG("scifm_bind to port failed with error %d\n", con_port);
 		err = con_port;
 		goto exit_close;
 	}
 
 	/*No real upper limit on number of connections.
-	Once scif_listen accepts 0 as an acceptable parameter for max
+	Once scifm_listen accepts 0 as an acceptable parameter for max
 	connections(to mean tht there is no upper limit), change this. */
-	if ((err = scif_listen(epd, 100)) < 0) {
+	if ((err = scifm_listen(epd, 100)) < 0) {
 		PM_DEBUG("Listen ioctl failed with error %d\n", err);
 		goto exit_close;
 	}
@@ -809,7 +809,7 @@ int micpm_init()
 	return err;
 
 exit_close:
-	scif_close(epd);
+	scifm_close(epd);
 	return err;
 }
 
@@ -827,7 +827,7 @@ micpm_uninit(void)
 		PM_DEBUG("connected_clients is nonzero (%d)\n",
 			atomic_read(&mic_data.dd_pm.connected_clients));
 	}
-	err = scif_close(epd);
+	err = scifm_close(epd);
 	if (err != 0) {
 		PM_DEBUG("Scif_close failed with error %d\n",err);
 	}
@@ -973,7 +973,7 @@ micpm_stop(mic_ctx_t *mic_ctx) {
 		PM_DEBUG("Power Management: Closing connection to"
 				" node: %d port:%d\n", mic_ctx->micpm_ctx.pm_epd->peer.node,
 				mic_ctx->micpm_ctx.pm_epd->peer.port);
-		err = scif_close(mic_ctx->micpm_ctx.pm_epd);
+		err = scifm_close(mic_ctx->micpm_ctx.pm_epd);
 		if(err!= 0)
 			PM_DEBUG("Scif_close failed with error %d\n",err);
 		mic_ctx->micpm_ctx.pm_epd = NULL;

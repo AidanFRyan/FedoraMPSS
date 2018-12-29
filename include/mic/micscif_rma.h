@@ -45,7 +45,7 @@
 #include <linux/hugetlb.h>
 #endif
 #endif
-#include <scif.h>
+#include "scif.h"
 #include <linux/errno.h>
 #include <linux/hardirq.h>
 #include <linux/types.h>

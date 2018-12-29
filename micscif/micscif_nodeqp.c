@@ -92,7 +92,7 @@ void micscif_add_epd_to_zombie_list(struct endpt *ep, bool mi_eplock_held)
 	unsigned long sflags = 0;
 
 	/*
-	 * It is an error to call scif_close() on an endpoint on which a
+	 * It is an error to call scifm_close() on an endpoint on which a
 	 * scif_range structure of that endpoint has not been returned
 	 * after a call to scif_get_pages() via scif_put_pages().
 	 */

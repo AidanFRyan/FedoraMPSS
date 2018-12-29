@@ -64,7 +64,7 @@
 #include <asm/apic.h>
 #include <asm/mic/mic_common.h>
 #include <asm/mic/mic_knc/micsboxdefine.h>
-#include <scif.h>
+#include "scif.h"
 #include "micras.h"
 #include "monahan.h"
 #include <asm/mic/micpm_device.h>

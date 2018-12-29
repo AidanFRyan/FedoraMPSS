@@ -79,7 +79,7 @@
 #endif /* MODULE_SCIF */
 
 #include <linux/notifier.h>
-#include <scif.h>
+#include "scif.h"
 #include "mic/micbaseaddressdefine.h"
 #include "mic/micsboxdefine.h"
 
@@ -96,7 +96,7 @@
 #endif
 
 //#define P2P_HACK 0
-#include <scif.h>
+#include "scif.h"
 #include "scif_ioctl.h"
 
 #define SCIF_READY_MAGIC_NUM 0x1eedfee0
@@ -521,13 +521,13 @@ int scif_user_send(scif_epd_t epd, void *msg, int len, int flags);
 int scif_user_recv(scif_epd_t epd, void *msg, int len, int flags);
 int __scif_pin_pages(void *addr, size_t len, int *out_prot,
 	int map_flags, scif_pinned_pages_t *pages);
-scif_epd_t __scif_open(void);
-int __scif_bind(scif_epd_t epd, uint16_t pn);
-int __scif_listen(scif_epd_t epd, int backlog);
+scif_epd_t __scifm_open(void);
+int __scifm_bind(scif_epd_t epd, uint16_t pn);
+int __scifm_listen(scif_epd_t epd, int backlog);
 int __scif_connect(scif_epd_t epd, struct scif_portID *dst, bool non_block);
 int __scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
 *newepd, int flags);
-int __scif_close(scif_epd_t epd);
+int __scifm_close(scif_epd_t epd);
 int __scif_send(scif_epd_t epd, void *msg, int len, int flags);
 int __scif_recv(scif_epd_t epd, void *msg, int len, int flags);
 off_t __scif_register(scif_epd_t epd, void *addr, size_t len, off_t offset,

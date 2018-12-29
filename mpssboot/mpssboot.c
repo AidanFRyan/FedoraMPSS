@@ -35,7 +35,7 @@
 
 #include <linux/module.h>
 #include <linux/init.h>
-#include <scif.h>
+#include "scif.h"
 #include <linux/errno.h>
 #include <linux/hardirq.h>
 #include <linux/types.h>
@@ -100,7 +100,7 @@ set_synctime(struct device *dev, struct device_attribute *attr, const char *buf,
 	int version = ACPT_VERSION; 
 	int err;
 
-	epd = scif_open();
+	epd = scifm_open();
 
 	if ((err = scif_connect(epd, &port))) {
 		printk("MPSSBOOT error, synctime connect failed: %d\n", err);
@@ -137,7 +137,7 @@ set_synctime(struct device *dev, struct device_attribute *attr, const char *buf,
 	timeset = 1;
 
 close_synctime:
-	scif_close(epd);
+	scifm_close(epd);
 	return count;
 }
 static DEVICE_ATTR(synctime, S_IRUGO | S_IWUSR, show_timesync, set_synctime);
@@ -157,7 +157,7 @@ set_host_notified(struct device *dev, struct device_attribute *attr, const char 
 	int version = ACPT_VERSION; 
 	int err;
 
-	epd = scif_open();
+	epd = scifm_open();
 
 	if ((err = scif_connect(epd, &port))) {
 		printk("MPSSBOOT error, notify connect failed: %d\n", err);
@@ -185,7 +185,7 @@ set_host_notified(struct device *dev, struct device_attribute *attr, const char 
 		printk("MPSSBOOT Boot acknowledged\n");
 
 close_notify:
-	scif_close(epd);
+	scifm_close(epd);
 	return count;
 }
 static DEVICE_ATTR(host_notified, S_IRUGO | S_IWUSR, show_host_notified, set_host_notified);

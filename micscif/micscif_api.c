@@ -39,7 +39,7 @@
 #include <linux/sched.h>
 #include <linux/kref.h>
 #include <linux/module.h>
-#include <scif.h>
+#include "scif.h"
 #include "mic/micscif.h"
 #ifndef _MIC_SCIF_
 #include "mic_common.h"
@@ -70,13 +70,13 @@ enum conn_async_state {
 };
 
 /**
- * scif_open() - Create a SCIF end point
+ * scifm_open() - Create a SCIF end point
  *
  * Create a SCIF end point and set the state to UNBOUND.  This function
  * returns the address of the end point data structure.
  */
 scif_epd_t
-__scif_open(void)
+__scifm_open(void)
 {
 	struct endpt *ep;
 
@@ -114,19 +114,19 @@ err_ep_alloc:
 }
 
 scif_epd_t
-scif_open(void)
+scifm_open(void)
 {
 	struct endpt *ep;
-	ep = (struct endpt *)__scif_open();
+	ep = (struct endpt *)__scifm_open();
 	if (ep)
 		kref_init(&(ep->ref_count));
 	return (scif_epd_t)ep;
 }
-// EXPORT_SYMBOL(scif_open);
+EXPORT_SYMBOL(scifm_open);
 
 /**
- * scif_close() - Terminate a SCIF end point
- * @epd:        The end point address returned from scif_open()
+ * scifm_close() - Terminate a SCIF end point
+ * @epd:        The end point address returned from scifm_open()
  *
  * The function terminates a scif connection.  It must ensure all traffic on
  * the connection is finished before removing it.
@@ -136,7 +136,7 @@ scif_open(void)
  * state and wait for the other side to also release it's memory references.
  */
 int
-__scif_close(scif_epd_t epd)
+__scifm_close(scif_epd_t epd)
 {
 	struct endpt *ep = (struct endpt *)epd;
 	struct endpt *tmpep;
@@ -368,21 +368,21 @@ scif_ref_rel(struct kref *kref_count)
 {
 	struct endpt *epd;
 	epd = container_of(kref_count, struct endpt, ref_count);
-	__scif_close((scif_epd_t)epd);
+	__scifm_close((scif_epd_t)epd);
 }
 
 int
-scif_close(scif_epd_t epd)
+scifm_close(scif_epd_t epd)
 {
 	__scif_flush(epd);
 	put_kref_count(epd);
 	return 0;
 }
-// EXPORT_SYMBOL(scif_close);
+EXPORT_SYMBOL(scifm_close);
 
 /**
  * scif_flush() - Flush the endpoint
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  *
  */
 int
@@ -482,8 +482,8 @@ __scif_flush(scif_epd_t epd)
 }
 
 /**
- * scif_bind() - Bind a SCIF end point to a port ID.
- * @epd:        The end point address returned from scif_open()
+ * scifm_bind() - Bind a SCIF end point to a port ID.
+ * @epd:        The end point address returned from scifm_open()
  * @pn:         Port ID (number) to bind to
  *
  * Set the port ID associated with the end point and place it in the bound state.
@@ -497,7 +497,7 @@ __scif_flush(scif_epd_t epd)
  * will be returned.
  */
 int
-__scif_bind(scif_epd_t epd, uint16_t pn)
+__scifm_bind(scif_epd_t epd, uint16_t pn)
 {
 	struct endpt *ep = (struct endpt *)epd;
 	unsigned long sflags;
@@ -518,29 +518,29 @@ __scif_bind(scif_epd_t epd, uint16_t pn)
 		 */
 		if ( pn < SCIF_ADMIN_PORT_END && !capable(CAP_SYS_ADMIN)) {
 			ret = -EACCES;
-			goto scif_bind_admin_exit;
+			goto scifm_bind_admin_exit;
 		}
 	}
 
 	spin_lock_irqsave(&ep->lock, sflags);
 	if (ep->state == SCIFEP_BOUND) {
 		ret = -EINVAL;
-		goto scif_bind_exit;
+		goto scifm_bind_exit;
 	} else if (ep->state != SCIFEP_UNBOUND) {
 		ret = -EISCONN;
-		goto scif_bind_exit;
+		goto scifm_bind_exit;
 	}
 
 	if (pn) {
 		if ((tmp = rsrv_scif_port(pn)) != pn) {
 			ret = -EINVAL;
-			goto scif_bind_exit;
+			goto scifm_bind_exit;
 		}
 	} else {
 		pn = get_scif_port();
 		if (!pn) {
 			ret = -ENOSPC;
-			goto scif_bind_exit;
+			goto scifm_bind_exit;
 		}
 	}
 
@@ -551,26 +551,26 @@ __scif_bind(scif_epd_t epd, uint16_t pn)
 	ret = pn;
 	pr_debug("SCIFAPI bind: bound to port number %d\n", pn);
 
-scif_bind_exit:
+scifm_bind_exit:
 	spin_unlock_irqrestore(&ep->lock, sflags);
-scif_bind_admin_exit:
+scifm_bind_admin_exit:
 	return ret;
 }
 
 int
-scif_bind(scif_epd_t epd, uint16_t pn)
+scifm_bind(scif_epd_t epd, uint16_t pn)
 {
 	int ret;
 	get_kref_count(epd);
-	ret = __scif_bind(epd, pn);
+	ret = __scifm_bind(epd, pn);
 	put_kref_count(epd);
 	return ret;
 }
-// EXPORT_SYMBOL(scif_bind);
+EXPORT_SYMBOL(scifm_bind);
 
 /**
- * scif_listen() - Place the end point in the listening state
- * @epd:        The end point address returned from scif_open()
+ * scifm_listen() - Place the end point in the listening state
+ * @epd:        The end point address returned from scifm_open()
  * @backlog:	Maximum number of pending connection requests.
  *
  * The end point is placed in the listening state ready to accept connection
@@ -585,7 +585,7 @@ scif_bind(scif_epd_t epd, uint16_t pn)
  *
  */
 int
-__scif_listen(scif_epd_t epd, int backlog)
+__scifm_listen(scif_epd_t epd, int backlog)
 {
 	struct endpt *ep = (struct endpt *)epd;
 	unsigned long sflags;
@@ -636,15 +636,15 @@ __scif_listen(scif_epd_t epd, int backlog)
 }
 
 int
-scif_listen(scif_epd_t epd, int backlog)
+scifm_listen(scif_epd_t epd, int backlog)
 {
 	int ret;
 	get_kref_count(epd);
-	ret = __scif_listen(epd, backlog);
+	ret = __scifm_listen(epd, backlog);
 	put_kref_count(epd);
 	return ret;
 }
-// EXPORT_SYMBOL(scif_listen);
+EXPORT_SYMBOL(scifm_listen);
 
 #ifdef _MIC_SCIF_
 /*
@@ -851,7 +851,7 @@ void micscif_conn_handler(struct work_struct *work)
 
 /**
  * scif_connect() - Request a connection to a remote node
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  * @dst:	Remote note address informtion
  *
  * The function requests a scif connection to the remote node
@@ -1019,7 +1019,7 @@ scif_connect(scif_epd_t epd, struct scif_portID *dst)
 
 /**
  * scif_accept() - Accept a connection request from the remote node
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  * @peer:       Filled in with pear node and port information
  * @newepd:     New end point created for connection
  * @flags:      Indicates sychronous or asynchronous mode
@@ -1272,7 +1272,7 @@ scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t *newepd, int fl
 
 /*
  * scif_msg_param_check:
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  * @len:	Length to receive
  * @flags:	Syncronous or asynchronous access
  *
@@ -1311,7 +1311,7 @@ err_ret:
 
 /**
  * _scif_send() - Send data to connection queue
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  * @msg:	Address to place data
  * @len:	Length to receive
  * @flags:	Syncronous or asynchronous access
@@ -1484,7 +1484,7 @@ dec_return:
 
 /**
  * _scif_recv() - Recieve data from connection queue
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  * @msg:	Address to place data
  * @len:	Length to receive
  * @flags:	Syncronous or asynchronous access
@@ -1627,7 +1627,7 @@ dec_return:
 
 /**
  * scif_user_send() - Send data to connection queue
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  * @msg:	Address to place data
  * @len:	Length to receive
  * @flags:	Syncronous or asynchronous access
@@ -1692,7 +1692,7 @@ send_err:
 
 /**
  * scif_user_recv() - Recieve data from connection queue
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  * @msg:	Address to place data
  * @len:	Length to receive
  * @flags:	Syncronous or asynchronous access
@@ -1761,7 +1761,7 @@ recv_err:
 
 /**
  * scif_send() - Send data to connection queue
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  * @msg:	Address to place data
  * @len:	Length to receive
  * @flags:	Syncronous or asynchronous access
@@ -1841,7 +1841,7 @@ scif_send(scif_epd_t epd, void *msg, int len, int flags)
 
 /**
  * scif_recv() - Recieve data from connection queue
- * @epd:        The end point address returned from scif_open()
+ * @epd:        The end point address returned from scifm_open()
  * @msg:	Address to place data
  * @len:	Length to receive
  * @flags:	Syncronous or asynchronous access

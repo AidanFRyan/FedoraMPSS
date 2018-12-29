@@ -1621,13 +1621,13 @@ mictc_start_capture(void)
 	pr_crit("g_traceBufferDataOffset   %llx\n", (uint64_t)g_traceBufferDataOffset);
 
 	// Data channel
-	if (!(mictc_endp_data = scif_open())) {
-		pr_crit("%s:%s:%d scif_open failed with ENOMEM\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!(mictc_endp_data = scifm_open())) {
+		pr_crit("%s:%s:%d scifm_open failed with ENOMEM\n", __FILE__, __FUNCTION__, __LINE__);
 		return;
 	}
 
-	if ((ret = scif_bind(mictc_endp_data, MICTC_SCIF_PORT_DATA)) < 0) {
-		pr_crit("%s:%s:%d scif_bind failed with error %ld\n", __FILE__, __FUNCTION__, __LINE__, ret);
+	if ((ret = scifm_bind(mictc_endp_data, MICTC_SCIF_PORT_DATA)) < 0) {
+		pr_crit("%s:%s:%d scifm_bind failed with error %ld\n", __FILE__, __FUNCTION__, __LINE__, ret);
 		goto done1;
 	}
 
@@ -1785,7 +1785,7 @@ mictc_start_capture(void)
 //	scif_unregister(mictc_endp_data, scif_offset, MICTC_XML_BUFFER_SIZE);
  done2:
  done1:
-	scif_close(mictc_endp_data);
+	scifm_close(mictc_endp_data);
 	kfree(trace);
  done1a:
 	kfree(g_traceBufferAllocated);

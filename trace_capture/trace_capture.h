@@ -71,7 +71,7 @@
 #include <linux/ioctl.h>
 
 #ifndef __SCIF_H__
-#include <scif.h>
+#include "scif.h"
 #endif
 
 /*

@@ -66,7 +66,7 @@
 #include <asm/mic/mic_common.h>
 #include <asm/mic/mic_knc/autobaseaddress.h>
 #include <asm/mic/mic_knc/micsboxdefine.h>
-#include <scif.h>
+#include "scif.h"
 #include "micras.h"
 
 #if MT_VERBOSE || MC_VERBOSE || PM_VERBOSE
@@ -1289,7 +1289,7 @@ cp_sess_end:
     kfree(buf);
   ep = (scif_epd_t) atomic64_xchg((atomic64_t *)(micras_cp_ep + slot), 0);
   if (ep)
-    scif_close(ep);
+    scifm_close(ep);
   micras_cp_kt[slot] = 0;
   set_bit(slot, micras_cp_fd);
 #if MT_VERBOSE
@@ -1358,7 +1358,7 @@ micras_cp(struct work_struct * work)
     thr = kthread_create(micras_cp_sess, (void *)(uint64_t) slot, "RAS CP svc %d", slot);
     if (IS_ERR(thr)) {
       printk("Scif: CP service thread creation failed\n");
-      scif_close(sess_ep);
+      scifm_close(sess_ep);
       micras_cp_ep[slot] = 0;
       set_bit(slot, micras_cp_fd);
       return;
@@ -1371,7 +1371,7 @@ micras_cp(struct work_struct * work)
   }
   else {
     printk("Scif: No open session slots, closing session\n");
-    scif_close(sess_ep);
+    scifm_close(sess_ep);
   }
 
   /*
@@ -1430,7 +1430,7 @@ micras_mc_sess(void * dummy)
 mc_sess_end:
   ep = (scif_epd_t) atomic64_xchg((atomic64_t *) &micras_mc_ep, 0);
   if (ep)
-    scif_close(ep);
+    scifm_close(ep);
   micras_mc_kt = 0;
 #if MC_VERBOSE
   printk("Scif: MC session terminated\n");
@@ -1480,7 +1480,7 @@ micras_mc(struct work_struct * work)
     thr = kthread_create(micras_mc_sess, 0, "RAS MC svc");
     if (IS_ERR(thr)) {
       printk("Scif: MC service thread creation failed\n");
-      scif_close(sess_ep);
+      scifm_close(sess_ep);
       micras_mc_ep = 0;
       return;
     }
@@ -1489,7 +1489,7 @@ micras_mc(struct work_struct * work)
   }
   else {
     printk("Scif: MC connection limit reached\n");
-    scif_close(sess_ep);
+    scifm_close(sess_ep);
   }
 
   /*
@@ -1583,7 +1583,7 @@ micras_ttl_sess(void * dummy)
 ttl_sess_end:
   ep = (scif_epd_t) atomic64_xchg((atomic64_t *) &micras_ttl_ep, 0);
   if (ep)
-    scif_close(ep);
+    scifm_close(ep);
   micras_ttl_kt = 0;
 #if PM_VERBOSE
   printk("Scif: TTL session terminated\n");
@@ -1633,7 +1633,7 @@ micras_ttl(struct work_struct * work)
     thr = kthread_create(micras_ttl_sess, 0, "RAS TTL svc");
     if (IS_ERR(thr)) {
       printk("Scif: TTL service thread creation failed\n");
-      scif_close(sess_ep);
+      scifm_close(sess_ep);
       micras_ttl_ep = 0;
       return;
     }
@@ -1642,7 +1642,7 @@ micras_ttl(struct work_struct * work)
   }
   else {
     printk("Scif: TTL connection limit reached\n");
-    scif_close(sess_ep);
+    scifm_close(sess_ep);
   }
 
   /*
@@ -2261,17 +2261,17 @@ micras_init(void)
   /*
    * Setup CP SCIF port in listening mode
    */
-  micras_cp_lstn = scif_open();
+  micras_cp_lstn = scifm_open();
   if (! micras_cp_lstn) {
     printk("RAS.init: cannot get SCIF CP endpoint\n");
     goto fail_cp;
   }
-  err = scif_bind(micras_cp_lstn, MR_MON_PORT);
+  err = scifm_bind(micras_cp_lstn, MR_MON_PORT);
   if (err < 0) {
     printk("RAS.init: cannot bind SCIF CP endpoint, error %d\n", err);
     goto fail_cp_ep;
   }
-  err = scif_listen(micras_cp_lstn, MR_SCIF_MAX);
+  err = scifm_listen(micras_cp_lstn, MR_SCIF_MAX);
   if (err < 0) {
     printk("RAS.init: cannot make SCIF CP listen, error %d\n", err);
     goto fail_cp_ep;
@@ -2286,17 +2286,17 @@ micras_init(void)
   /*
    * Setup MC SCIF port in listening mode
    */
-  micras_mc_lstn = scif_open();
+  micras_mc_lstn = scifm_open();
   if (! micras_mc_lstn) {
     printk("RAS.init: cannot get SCIF MC endpoint\n");
     goto fail_mc;
   }
-  err = scif_bind(micras_mc_lstn, MR_MCE_PORT);
+  err = scifm_bind(micras_mc_lstn, MR_MCE_PORT);
   if (err < 0) {
     printk("RAS.init: cannot bind SCIF MC endpoint, error %d\n", err);
     goto fail_mc_ep;
   }
-  err = scif_listen(micras_mc_lstn, MR_SCIF_MAX);
+  err = scifm_listen(micras_mc_lstn, MR_SCIF_MAX);
   if (err < 0) {
     printk("RAS.init: cannot make SCIF MC listen, error %d\n", err);
     goto fail_mc_ep;
@@ -2311,17 +2311,17 @@ micras_init(void)
   /*
    * Setup TTL SCIF port in listening mode
    */
-  micras_ttl_lstn = scif_open();
+  micras_ttl_lstn = scifm_open();
   if (! micras_ttl_lstn) {
     printk("RAS.init: cannot get SCIF TTL endpoint\n");
     goto fail_ttl;
   }
-  err = scif_bind(micras_ttl_lstn, MR_TTL_PORT);
+  err = scifm_bind(micras_ttl_lstn, MR_TTL_PORT);
   if (err < 0) {
     printk("RAS.init: cannot bind SCIF TTL endpoint, error %d\n", err);
     goto fail_ttl_ep;
   }
-  err = scif_listen(micras_ttl_lstn, MR_SCIF_MAX);
+  err = scifm_listen(micras_ttl_lstn, MR_SCIF_MAX);
   if (err < 0) {
     printk("RAS.init: cannot make SCIF TTL listen, error %d\n", err);
     goto fail_ttl_ep;
@@ -2496,19 +2496,19 @@ fail_iomap:
   destroy_workqueue(micras_ttl_wq);
 
 fail_ttl_ep:
-  scif_close(micras_ttl_lstn);
+  scifm_close(micras_ttl_lstn);
 
 fail_ttl:
   destroy_workqueue(micras_mc_wq);
 
 fail_mc_ep:
-  scif_close(micras_mc_lstn);
+  scifm_close(micras_mc_lstn);
 
 fail_mc:
   destroy_workqueue(micras_cp_wq);
 
 fail_cp_ep:
-  scif_close(micras_cp_lstn);
+  scifm_close(micras_cp_lstn);
 
 fail_cp:
   class_unregister(&ras_class);
@@ -2544,9 +2544,9 @@ micras_exit(void)
   /*
    * Close SCIF listeners (no more connects).
    */
-  scif_close(micras_cp_lstn);
-  scif_close(micras_mc_lstn);
-  scif_close(micras_ttl_lstn);
+  scifm_close(micras_cp_lstn);
+  scifm_close(micras_mc_lstn);
+  scifm_close(micras_ttl_lstn);
   msleep(10);
   destroy_workqueue(micras_cp_wq);
   destroy_workqueue(micras_mc_wq);
@@ -2561,7 +2561,7 @@ micras_exit(void)
       printk("RAS.exit: force closing CP session %d\n", i);
       ep = (scif_epd_t) atomic64_xchg((atomic64_t *)(micras_cp_ep + i), 0);
       if (ep)
-        scif_close(ep);
+        scifm_close(ep);
     }
   }
   for(i = 0; i < 1000; i++) {
@@ -2573,7 +2573,7 @@ micras_exit(void)
     printk("RAS.exit: force closing MC session\n");
     ep = (scif_epd_t) atomic64_xchg((atomic64_t *) &micras_mc_ep, 0);
     if (ep)
-      scif_close(ep);
+      scifm_close(ep);
     for(i = 0; (i < 1000) && micras_mc_kt; i++)
       msleep(1);
   }
@@ -2581,7 +2581,7 @@ micras_exit(void)
     printk("RAS.exit: force closing TTL session\n");
     ep = (scif_epd_t) atomic64_xchg((atomic64_t *) &micras_ttl_ep, 0);
     if (ep)
-      scif_close(ep);
+      scifm_close(ep);
     for(i = 0; (i < 1000) && micras_ttl_kt; i++)
       msleep(1);
   }

@@ -39,7 +39,7 @@
 #include <linux/slab.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
-#include <scif.h>
+#include "scif.h"
 #include <mic/mic_pm.h>
 #include <mic/micscif.h>
 #include "pm_scif.h"
@@ -359,17 +359,17 @@ int pm_scif_init(void)
 
 	pm_scif_register(&micpmscif);
 
-	if ((pm_scif->ep = scif_open()) == NULL) {
-		PM_DB(" scif_open failed\n");
+	if ((pm_scif->ep = scifm_open()) == NULL) {
+		PM_DB(" scifm_open failed\n");
 		goto end_con;
 	}
 
-	if ((pm_scif->lport = scif_bind(pm_scif->ep, 0)) < 0) {
-		PM_DB(" scif_bind failed\n");
+	if ((pm_scif->lport = scifm_bind(pm_scif->ep, 0)) < 0) {
+		PM_DB(" scifm_bind failed\n");
 		goto end_con;
 	}
 
-	PM_DB(" scif_bind successfull. Local port number = %d, ep =  \n",
+	PM_DB(" scifm_bind successfull. Local port number = %d, ep =  \n",
 							 pm_scif->lport);
 	dump_ep(pm_scif->ep, __func__,__LINE__);
 	pm_scif->rport_id.node = 0;
@@ -420,7 +420,7 @@ void pm_scif_exit(void)
 
 		PM_DB("closing ep \n");
 		if (pm_scif->ep)
-			scif_close(pm_scif->ep);
+			scifm_close(pm_scif->ep);
 
 		pm_scif_unregister(&micpmscif);
 		pm_scif->con_state = PM_DISCONNECTED;

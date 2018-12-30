@@ -973,7 +973,7 @@ int micscif_unregister_window(struct reg_range_t *window)
 	{
 		get_window_ref_count(window, 1);
 		mutex_unlock(&ep->rma_info.rma_lock);
-		if (send_msg && (err = micscif_send_scif_unregister(ep, window))) {
+		if (send_msg && (err = micscifm_send_scif_unregister(ep, window))) {
 			window->unreg_state = OP_COMPLETED;
 			goto done;
 		}
@@ -1038,13 +1038,13 @@ done:
 }
 
 /**
- * micscif_send_alloc_request:
+ * micscifm_send_alloc_request:
  * @ep: end point
  * @window: self registration window
  *
  * Send a remote window allocation request
  */
-int micscif_send_alloc_request(struct endpt *ep, struct reg_range_t *window)
+int micscifm_send_alloc_request(struct endpt *ep, struct reg_range_t *window)
 {
 	struct nodemsg msg;
 	struct allocmsg *alloc = &window->alloc_handle;
@@ -1252,7 +1252,7 @@ retry:
 }
 
 /**
- * micscif_send_scif_register:
+ * micscifm_send_scif_register:
  * @ep: end point
  * @window: self registration window
  *
@@ -1260,7 +1260,7 @@ retry:
  * SCIF_REGISTER_(N)ACK message else send a SCIF_FREE_VIRT
  * message so that the peer can free its remote window allocated earlier.
  */
-int micscif_send_scif_register(struct endpt *ep, struct reg_range_t *window)
+int micscifm_send_scif_register(struct endpt *ep, struct reg_range_t *window)
 {
 	int err = 0;
 	struct nodemsg msg;
@@ -1299,13 +1299,13 @@ retry:
 }
 
 /**
- * micscif_send_scif_unregister:
+ * micscifm_send_scif_unregister:
  * @ep: end point
  * @window: self registration window
  *
  * Send a SCIF_UNREGISTER message.
  */
-int micscif_send_scif_unregister(struct endpt *ep, struct reg_range_t *window)
+int micscifm_send_scif_unregister(struct endpt *ep, struct reg_range_t *window)
 {
 	struct nodemsg msg;
 
@@ -1754,13 +1754,13 @@ error:
 }
 
 /**
- * micscif_send_fence_mark:
+ * micscifm_send_fence_mark:
  * @epd: end point descriptor.
  * @out_mark: Output DMA mark reported by peer.
  *
  * Send a remote fence mark request.
  */
-int micscif_send_fence_mark(scif_epd_t epd, int *out_mark)
+int micscifm_send_fence_mark(scif_epd_t epd, int *out_mark)
 {
 	int err;
 	struct nodemsg msg;
@@ -1811,13 +1811,13 @@ error:
 }
 
 /**
- * micscif_send_fence_wait:
+ * micscifm_send_fence_wait:
  * @epd: end point descriptor.
  * @mark: DMA mark to wait for.
  *
  * Send a remote fence wait request.
  */
-int micscif_send_fence_wait(scif_epd_t epd, int mark)
+int micscifm_send_fence_wait(scif_epd_t epd, int mark)
 {
 	int err;
 	struct nodemsg msg;
@@ -1865,7 +1865,7 @@ error:
 }
 
 /**
- * micscif_send_fence_signal:
+ * micscifm_send_fence_signal:
  * @epd - endpoint descriptor
  * @loff - local offset
  * @lval - local value to write to loffset
@@ -1875,7 +1875,7 @@ error:
  *
  * Sends a remote fence signal request
  */
-int micscif_send_fence_signal(scif_epd_t epd, off_t roff, uint64_t rval,
+int micscifm_send_fence_signal(scif_epd_t epd, off_t roff, uint64_t rval,
 		off_t loff, uint64_t lval, int flags)
 {
 	int err = 0;

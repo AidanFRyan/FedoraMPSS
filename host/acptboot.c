@@ -66,9 +66,9 @@ void acptboot_getconn(struct work_struct *work)
 	int version;
 	int err;
 
-	if ((err = scif_accept(acptboot_data->listen_epd, &data, &conn_epd,
+	if ((err = scifm_accept(acptboot_data->listen_epd, &data, &conn_epd,
 						SCIF_ACCEPT_SYNC))) {
-		pr_debug("ACPTBOOT: scif_accept_failed %d\n", err);
+		pr_debug("ACPTBOOT: scifm_accept_failed %d\n", err);
 		return;
 
 		//goto requeue_accept;
@@ -97,14 +97,14 @@ void acptboot_getconn(struct work_struct *work)
 		node_ctx->boot_count++;
 
 		proto = ACPT_BOOT_ACK;
-		scif_send(conn_epd, &proto, sizeof(proto), SCIF_SEND_BLOCK);
+		scifm_send(conn_epd, &proto, sizeof(proto), SCIF_SEND_BLOCK);
 		break;
 
 	case ACPT_REQUEST_TIME:
 		getnstimeofday(&tod);
 		proto = ACPT_TIME_DATA;
-		scif_send(conn_epd, &proto, sizeof(proto), SCIF_SEND_BLOCK);
-		scif_send(conn_epd, &tod, sizeof(tod), SCIF_SEND_BLOCK);
+		scifm_send(conn_epd, &proto, sizeof(proto), SCIF_SEND_BLOCK);
+		scifm_send(conn_epd, &tod, sizeof(tod), SCIF_SEND_BLOCK);
 		break;
 	}
 

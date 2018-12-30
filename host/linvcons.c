@@ -626,7 +626,7 @@ micvcons_resume(mic_ctx_t *mic_ctx)
 		do {
 			vcons_host_header->mic_magic = MIC_VCONS_WAKINGUP;
 			spin_unlock_bh(&port->dp_lock);
-			status = micscif_connect_node(mic_get_scifnode_id(mic_ctx), false);
+			status = micscifm_connect_node(mic_get_scifnode_id(mic_ctx), false);
 			spin_lock_bh(&port->dp_lock);
 		} while ((status == 0) && 
 			(vcons_host_header->mic_magic == MIC_VCONS_SLEEPING));

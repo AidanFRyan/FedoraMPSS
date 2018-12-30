@@ -234,7 +234,7 @@ static void _micscif_exit(void)
 	scif_dev[SCIF_HOST_NODE].sd_state = SCIFDEV_STOPPING;
 
 	/* The EXIT message is the last message from MIC to the Host */
-	micscif_send_exit();
+	micscifm_send_exit();
 
 	/*
 	 * Deliberate infinite wait for a host response during driver
@@ -284,7 +284,7 @@ struct file_operations micscif_ops = {
 	.owner = THIS_MODULE,
 	.unlocked_ioctl = micscif_unlocked_ioctl,
 	.mmap = micscif_mmap,
-	.poll = micscif_poll,
+	.poll = micscifm_poll,
 	.flush = micscif_flush,
 	.open  = micscifm_open,
 	.release = micscif_release,
@@ -437,7 +437,7 @@ static int micscif_init(void)
 		init_waitqueue_head(&scif_dev[i].sd_wq);
 		init_waitqueue_head(&scif_dev[i].sd_p2p_wq);
 		INIT_DELAYED_WORK(&scif_dev[i].sd_p2p_dwork,
-			scif_poll_qp_state);
+			scifm_poll_qp_state);
 		scif_dev[i].sd_p2p_retry = 0;
 	}
 

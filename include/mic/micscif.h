@@ -446,7 +446,7 @@ struct endpt {
 	enum scif_state		sd_state;
 	/*
 	 * True if the endpoint was created
-	 * via scif_accept(..).
+	 * via scifm_accept(..).
 	 */
 	bool			accepted_ep;
 	/*
@@ -524,11 +524,11 @@ int __scif_pin_pages(void *addr, size_t len, int *out_prot,
 scif_epd_t __scifm_open(void);
 int __scifm_bind(scif_epd_t epd, uint16_t pn);
 int __scifm_listen(scif_epd_t epd, int backlog);
-int __scif_connect(scif_epd_t epd, struct scif_portID *dst, bool non_block);
-int __scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
+int __scifm_connect(scif_epd_t epd, struct scif_portID *dst, bool non_block);
+int __scifm_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
 *newepd, int flags);
 int __scifm_close(scif_epd_t epd);
-int __scif_send(scif_epd_t epd, void *msg, int len, int flags);
+int __scifm_send(scif_epd_t epd, void *msg, int len, int flags);
 int __scif_recv(scif_epd_t epd, void *msg, int len, int flags);
 off_t __scif_register(scif_epd_t epd, void *addr, size_t len, off_t offset,
 int prot_flags, int map_flags);
@@ -539,7 +539,7 @@ int __scif_writeto(scif_epd_t epd, off_t loffset, size_t len, off_t
 roffset, int rma_flags);
 int __scif_fence_mark(scif_epd_t epd, int flags, int *mark);
 int __scif_fence_wait(scif_epd_t epd, int mark);
-int __scif_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval, off_t roff,
+int __scifm_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval, off_t roff,
 uint64_t rval, int flags);
 off_t __scif_register_pinned_pages(scif_epd_t epd,
 scif_pinned_pages_t pinned_pages, off_t offset, int map_flags);
@@ -555,21 +555,21 @@ uint16_t rsrv_scif_port(uint16_t port);
 uint16_t get_scif_port(void);
 void put_scif_port(uint16_t port);
 
-void micscif_send_exit(void);
+void micscifm_send_exit(void);
 
 void scif_ref_rel(struct kref *kref_count);
 
 #ifdef _MODULE_SCIF_
-unsigned int micscif_poll(struct file *f, poll_table *wait);
-unsigned int scif_pollfd(struct file *f, poll_table *wait, scif_epd_t epd);
-unsigned int __scif_pollfd(struct file *f, poll_table *wait, struct endpt *ep);
+unsigned int micscifm_poll(struct file *f, poll_table *wait);
+unsigned int scifm_pollfd(struct file *f, poll_table *wait, scif_epd_t epd);
+unsigned int __scifm_pollfd(struct file *f, poll_table *wait, struct endpt *ep);
 int micscif_flush(struct file *f, fl_owner_t id);
 #endif
 
 #ifdef _MIC_SCIF_
 void mic_debug_init(void);
 void micscif_get_node_info(void);
-void scif_poll_qp_state(struct work_struct *work);
+void scifm_poll_qp_state(struct work_struct *work);
 #endif
 void mic_debug_uninit(void);
 
@@ -664,7 +664,7 @@ micscif_cleanup_zombie_epd(void)
 
 /**
  * scif_wakeup_ep() - Wake up all clients based on the type
- * requested i.e. threads blocked in scif_send(..) and/or scif_recv(..).
+ * requested i.e. threads blocked in scifm_send(..) and/or scif_recv(..).
  */
 static inline void
 scif_wakeup_ep(int type)

@@ -143,7 +143,7 @@ int micpm_update_pc3(mic_ctx_t *mic_ctx, bool set)
 }
 
 /*
- * Wraper to scif_send that takes in the buffer to be sent
+ * Wraper to scifm_send that takes in the buffer to be sent
  * as input.
  */
 int
@@ -174,10 +174,10 @@ mic_pm_send(mic_ctx_t *mic_ctx, void *msg, uint32_t len)
 		return -EINVAL;
 	}
 
-	err = scif_send(epd, msg, len, PM_SEND_MODE);
-	/*scif_send returns the number of bytes returned on success */
+	err = scifm_send(epd, msg, len, PM_SEND_MODE);
+	/*scifm_send returns the number of bytes returned on success */
 	if(err <= 0) {
-		PM_DEBUG("scif_send to node: %d port: %d failed with error %d\n",
+		PM_DEBUG("scifm_send to node: %d port: %d failed with error %d\n",
 				epd->peer.node, epd->peer.port, err);
 	} else {
 		PM_DEBUG("Bytes sent = %d\n",err);
@@ -485,13 +485,13 @@ mic_pm_accept_work(struct work_struct *work)
 	mic_data_t *mic_data_p = &mic_data;
 
 	PM_DEBUG("Accept thread waiting for new PM connections\n");
-	err =  scif_accept(mic_data.dd_pm.epd, &portID, &newepd, SCIF_ACCEPT_SYNC);
+	err =  scifm_accept(mic_data.dd_pm.epd, &portID, &newepd, SCIF_ACCEPT_SYNC);
 	if (err == -EBUSY || err == -ENODEV) {
-		PM_DEBUG("scif_accept error %d\n", err);
+		PM_DEBUG("scifm_accept error %d\n", err);
 		goto continue_accepting;
 	}
 	else if (err < 0) {
-		PM_DEBUG("scif_accept failed with errno %d\n", err);
+		PM_DEBUG("scifm_accept failed with errno %d\n", err);
 		goto exit;
 
 	}

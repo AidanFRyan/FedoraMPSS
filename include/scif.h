@@ -229,7 +229,7 @@ struct scif_range {
 				 */
 };
 
-struct scif_pollepd {
+struct scifm_pollepd {
 	scif_epd_t epd;   /* endpoint descriptor */
 	short events;     /* requested events */
 	short revents;    /* returned events */
@@ -357,15 +357,15 @@ int scifm_bind(scif_epd_t epd, uint16_t pn);
 int scifm_listen(scif_epd_t epd, int backlog);
 
 /**
- * scif_connect - Initiate a connection on a port
+ * scifm_connect - Initiate a connection on a port
  *	\param epd		endpoint descriptor
  *	\param dst		global id of port to which to connect
  *
- * The scif_connect() function requests the connection of endpoint epd to remote
+ * The scifm_connect() function requests the connection of endpoint epd to remote
  * port dst. If the connection is successful, a peer endpoint, bound to dst, is
  * created on node dst.node. On successful return, the connection is complete.
  *
- * If the endpoint epd has not already been bound to a port, scif_connect()
+ * If the endpoint epd has not already been bound to a port, scifm_connect()
  * will bind it to an unused local port.
  *
  * A connection is terminated when an endpoint of the connection is closed,
@@ -373,7 +373,7 @@ int scifm_listen(scif_epd_t epd, int backlog);
  * endpoints of a connection is terminated.
  *
  *\return
- * Upon successful completion, scif_connect() returns the port ID to which the
+ * Upon successful completion, scifm_connect() returns the port ID to which the
  * endpoint, epd, is bound; otherwise: in user mode -1 is returned and errno is
  * set to indicate the error; in kernel mode the negative of one of the
  * following errors is returned.
@@ -403,17 +403,17 @@ int scifm_listen(scif_epd_t epd, int backlog);
  *- EOPNOTSUPP
  * - The endpoint is listening and cannot be connected
 */
-int scif_connect(scif_epd_t epd, struct scif_portID *dst);
+int scifm_connect(scif_epd_t epd, struct scif_portID *dst);
 
 /**
- * scif_accept - Accept a connection on an endpoint
+ * scifm_accept - Accept a connection on an endpoint
  *	\param epd		endpoint descriptor
  *	\param peer		global id of port to which connected
  *	\param newepd		new connected endpoint descriptor
  *	\param flags		flags
  *
- * The scif_accept() call extracts the first connection request on the queue of
- * pending connections for the port on which epd is listening. scif_accept()
+ * The scifm_accept() call extracts the first connection request on the queue of
+ * pending connections for the port on which epd is listening. scifm_accept()
  * creates a new endpoint, bound to the same port as epd, and allocates a new
  * SCIF endpoint descriptor, returned in newepd, for the endpoint.  The new
  * endpoint is connected to the endpoint through which the connection was
@@ -424,7 +424,7 @@ int scif_connect(scif_epd_t epd, struct scif_portID *dst);
  * local port number) of the port which requested the connection.
  *
  * If the peer endpoint which requested the connection is closed, the endpoint
- * returned by scif_accept() is closed.
+ * returned by scifm_accept() is closed.
  *
  * The number of connections that can (subsequently) be accepted on epd is only
  * limited by system resources (memory).
@@ -433,16 +433,16 @@ int scif_connect(scif_epd_t epd, struct scif_portID *dst);
  * following values:
  *- SCIF_ACCEPT_SYNC: block until a connection request is presented. If
  *		      SCIF_ACCEPT_SYNC is not in flags, and no pending
- *		      connections are present on the queue, scif_accept()fails
+ *		      connections are present on the queue, scifm_accept()fails
  *		      with an EAGAIN error
  *
  * On Linux in user mode, the select() and poll() functions can be used to
  * determine when there is a connection request. On Microsoft Windows* and on
- * Linux in kernel mode, the scif_poll() function may be used for this purpose.
+ * Linux in kernel mode, the scifm_poll() function may be used for this purpose.
  * A readable event will be delivered when a connection is requested.
  *
  *\return
- * Upon successful completion, scif_accept() returns 0; otherwise: in user mode
+ * Upon successful completion, scifm_accept() returns 0; otherwise: in user mode
  * -1 is returned and errno is set to indicate the error; in kernel mode the
  *  negative of one of the following errors is returned.
  *
@@ -472,7 +472,7 @@ int scif_connect(scif_epd_t epd, struct scif_portID *dst);
  *- ENOENT
  * - Secondary part of epd registeration failed.
 */
-int scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
+int scifm_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
 *newepd, int flags);
 
 /**
@@ -517,31 +517,31 @@ int scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t
 int scifm_close(scif_epd_t epd);
 
 /**
- * scif_send - Send a message
+ * scifm_send - Send a message
  *	\param epd		endpoint descriptor
  *	\param msg		message buffer address
  *	\param len		message length
  *	\param flags		blocking mode flags
  *
- * scif_send() sends data to the peer of endpoint epd. Up to len bytes of data
+ * scifm_send() sends data to the peer of endpoint epd. Up to len bytes of data
  * are copied from memory starting at address msg. On successful execution the
- * return value of scif_send() is the number of bytes that were sent, and is
- * zero if no bytes were sent because len was zero. scif_send() may be called
+ * return value of scifm_send() is the number of bytes that were sent, and is
+ * zero if no bytes were sent because len was zero. scifm_send() may be called
  * only when the endpoint is in a connected state.
  *
- * If a scif_send() call is non-blocking, then it sends only those bytes which
+ * If a scifm_send() call is non-blocking, then it sends only those bytes which
  * can be sent without waiting, up to a maximum of len bytes.
  *
- * If a scif_send() call is blocking, then it normally returns after sending
+ * If a scifm_send() call is blocking, then it normally returns after sending
  * all len bytes. If a blocking call is interrupted or the connection is
  * forcibly closed, the call is considered successful if some bytes were sent
  * or len is zero, otherwise the call is considered unsuccessful.
  *
  * On Linux in user mode, the select() and poll() functions can be used to
  * determine when the send queue is not full. On Microsoft Windows* and on
- * Linux in kernel mode, the scif_poll() function may be used for this purpose.
+ * Linux in kernel mode, the scifm_poll() function may be used for this purpose.
  *
- * It is recommended that scif_send()/scif_recv() only be used for short
+ * It is recommended that scifm_send()/scif_recv() only be used for short
  * control-type message communication between SCIF endpoints. The SCIF RMA
  * APIs are expected to provide better performance for transfer sizes of
  * 1024 bytes or longer.
@@ -551,7 +551,7 @@ int scifm_close(scif_epd_t epd);
  *- SCIF_SEND_BLOCK: block until the entire message is sent.
  *
  *\return
- * Upon successful completion, scif_send() returns the number of bytes sent;
+ * Upon successful completion, scifm_send() returns the number of bytes sent;
  * otherwise: in user mode -1 is returned and errno is set to indicate the
  * error; in kernel mode the negative of one of the following errors is
  * returned.
@@ -578,7 +578,7 @@ int scifm_close(scif_epd_t epd);
  *- ENOTTY
  * - epd is not a valid endpoint descriptor
  */
-int scif_send(scif_epd_t epd, void *msg, int len, int flags);
+int scifm_send(scif_epd_t epd, void *msg, int len, int flags);
 
 /**
  * scif_recv - Receive a message
@@ -605,10 +605,10 @@ int scif_send(scif_epd_t epd, void *msg, int len, int flags);
  *
  * On Linux in user mode, the select() and poll() functions can be used to
  * determine when data is available to be received. On Microsoft Windows* and
- * on Linux in kernel mode, the scif_poll() function may be used for this
+ * on Linux in kernel mode, the scifm_poll() function may be used for this
  * purpose.
  *
- * It is recommended that scif_send()/scif_recv() only be used for short
+ * It is recommended that scifm_send()/scif_recv() only be used for short
  * control-type message communication between SCIF endpoints. The SCIF RMA
  * APIs are expected to provide better performance for transfer sizes of
  * 1024 bytes or longer.
@@ -760,15 +760,15 @@ int prot_flags, int map_flags);
  *
  * On a successful return, pages within the window may no longer be specified
  * in calls to scif_mmap(), scif_readfrom(), scif_writeto(), scif_vreadfrom(),
- * scif_vwriteto(), scif_get_pages, and scif_fence_signal(). The window, however,
+ * scif_vwriteto(), scif_get_pages, and scifm_fence_signal(). The window, however,
  * continues to exist until all previous references against it are removed. A
  * window is referenced if there is a mapping to it created by scif_mmap(), or if
  * scif_get_pages() was called against the window (and the pages have not been
  * returned via scif_put_pages()). A window is also referenced while an RMA, in
  * which some range of the window is a source or destination, is in progress.
  * Finally a window is referenced while some offset in that window was specified
- * to scif_fence_signal(), and the RMAs marked by that call to
- * scif_fence_signal() have not completed. While a window is in this state, its
+ * to scifm_fence_signal(), and the RMAs marked by that call to
+ * scifm_fence_signal() have not completed. While a window is in this state, its
  * registered address space pages are not available for use in a new registered
  * window.
  *
@@ -831,7 +831,7 @@ int scif_unregister(scif_epd_t epd, off_t offset, size_t len);
  * transfer is complete. Otherwise, the transfer may be performed asynchron-
  * ously. The order in which any two aynchronous RMA operations complete
  * is non-deterministic. The synchronization functions, scif_fence_mark()/
- * scif_fence_wait() and scif_fence_signal(), can be used to synchronize to
+ * scif_fence_wait() and scifm_fence_signal(), can be used to synchronize to
  * the completion of asynchronous RMA operations.
  *
  * The DMA transfer of individual bytes is not guaranteed to complete in
@@ -917,7 +917,7 @@ roffset, int rma_flags);
  * transfer is complete. Otherwise, the transfer may be performed asynchron-
  * ously. The order in which any two aynchronous RMA operations complete
  * is non-deterministic. The synchronization functions, scif_fence_mark()/
- * scif_fence_wait() and scif_fence_signal(), can be used to synchronize to
+ * scif_fence_wait() and scifm_fence_signal(), can be used to synchronize to
  * the completion of asynchronous RMA operations.
  *
  * The DMA transfer of individual bytes is not guaranteed to complete in
@@ -1001,7 +1001,7 @@ roffset, int rma_flags);
  * transfer is complete. Otherwise, the transfer may be performed asynchron-
  * ously. The order in which any two aynchronous RMA operations complete
  * is non-deterministic. The synchronization functions, scif_fence_mark()/
- * scif_fence_wait() and scif_fence_signal(), can be used to synchronize to
+ * scif_fence_wait() and scifm_fence_signal(), can be used to synchronize to
  * the completion of asynchronous RMA operations.
  *
  * The DMA transfer of individual bytes is not guaranteed to complete in
@@ -1091,7 +1091,7 @@ int rma_flags);
  * transfer is complete. Otherwise, the transfer may be performed asynchron-
  * ously. The order in which any two aynchronous RMA operations complete
  * is non-deterministic. The synchronization functions, scif_fence_mark()/
- * scif_fence_wait() and scif_fence_signal(), can be used to synchronize to
+ * scif_fence_wait() and scifm_fence_signal(), can be used to synchronize to
  * the completion of asynchronous RMA operations.
  *
  * The DMA transfer of individual bytes is not guaranteed to complete in
@@ -1234,14 +1234,14 @@ int scif_fence_mark(scif_epd_t epd, int flags, int *mark);
 int scif_fence_wait(scif_epd_t epd, int mark);
 
 /**
- * scif_fence_signal - Request a signal on completion of RMAs
+ * scifm_fence_signal - Request a signal on completion of RMAs
  * 	\param loff		local offset
  * 	\param lval		local value to write to loffset
  * 	\param roff		remote offset
  * 	\param rval		remote value to write to roffset
  * 	\param flags		flags
  *
- * scif_fence_signal() returns after marking the current set of all uncompleted
+ * scifm_fence_signal() returns after marking the current set of all uncompleted
  * RMAs initiated through the endpoint epd or marking the current set of all
  * uncompleted RMAs initiated through the peer of endpoint epd.
  *
@@ -1269,7 +1269,7 @@ int scif_fence_wait(scif_epd_t epd, int mark);
  *   address space of epd.
  *
  *\return
- * Upon successful completion, scif_fence_signal() returns 0; otherwise: in
+ * Upon successful completion, scifm_fence_signal() returns 0; otherwise: in
  * user mode -1 is returned and errno is set to indicate the error; in kernel
  * mode the negative of one of the following errors is returned.
  *\par Errors:
@@ -1291,16 +1291,16 @@ int scif_fence_wait(scif_epd_t epd, int mark);
  * - loff is invalid for the registered address of epd, or
  * - roff is invalid for the registered address space, of the peer of epd
  */
-int scif_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval, off_t roff,
+int scifm_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval, off_t roff,
 uint64_t rval, int flags);
 
 /**
- * scif_get_nodeIDs - Return information about online nodes
+ * scifm_get_nodeIDs - Return information about online nodes
  * 	\param nodes 		array in which to return online node IDs
  * 	\param len	 	number of entries in the nodes array
  * 	\param self 		address to place the node ID of the local node
  *
- * scif_get_nodeIDs() fills in the nodes array with up to len node IDs of the
+ * scifm_get_nodeIDs() fills in the nodes array with up to len node IDs of the
  * nodes in the SCIF network. If there is not enough space in nodes, as
  * indicated by the len parameter, only len node IDs are returned in nodes. The
  * return value of scif_get_nodeID() is the total number of nodes currently in
@@ -1310,7 +1310,7 @@ uint64_t rval, int flags);
  * The node ID of the local node is returned at self.
  *
  *\return
- * Upon successful completion, scif_get_nodeIDs() returns the actual number of
+ * Upon successful completion, scifm_get_nodeIDs() returns the actual number of
  * online nodes in the SCIF network including 'self'; otherwise: in user mode
  * -1 is returned and errno is set to indicate the error; in kernel mode no
  * errors are returned.
@@ -1319,7 +1319,7 @@ uint64_t rval, int flags);
  *- EFAULT
  * - Bad address
  */
-int scif_get_nodeIDs(uint16_t *nodes, int len, uint16_t *self);
+int scifm_get_nodeIDs(uint16_t *nodes, int len, uint16_t *self);
 
 
 /**
@@ -1567,14 +1567,14 @@ int scif_put_pages(
        struct scif_range *pages);
 
 /**
- * scif_poll - Wait for some event on an endpoint
+ * scifm_poll - Wait for some event on an endpoint
  * 	\param epds		Array of endpoint descriptors
  * 	\param nepds		Length of epds
- * 	\param timeout		Upper limit on time for which scif_poll() will
+ * 	\param timeout		Upper limit on time for which scifm_poll() will
  * 				block
  *
- * scif_poll() waits for one of a set of endpoints to become ready to perform
- * an I/O operation. scif_poll() exposes a subset of the functionality of the
+ * scifm_poll() waits for one of a set of endpoints to become ready to perform
+ * an I/O operation. scifm_poll() exposes a subset of the functionality of the
  * POSIX standard poll() function.
  *
  * The epds argument specifies the endpoint descriptors to be examined and the
@@ -1582,7 +1582,7 @@ int scif_put_pages(
  * array with one member for each open endpoint descriptor of interest.
  *
  * The number of items in the epds array is specified in nepds. The epd field
- * of scif_pollepd is an endpoint descriptor of an open endpoint. The field
+ * of scifm_pollepd is an endpoint descriptor of an open endpoint. The field
  * events is a bitmask specifying the events which the application is
  * interested in. The field revents is an output parameter, filled by the
  * kernel with the events that actually occurred. The bits returned in revents
@@ -1592,19 +1592,19 @@ int scif_put_pages(
  * whenever the corresponding condition is true.)
  *
  * If none of the events requested (and no error) has occurred for any of the
- * endpoint descriptors, then scif_poll() blocks until one of the events occurs.
+ * endpoint descriptors, then scifm_poll() blocks until one of the events occurs.
  *
  * The timeout argument specifies an upper limit on the time for which
- * scif_poll() will block, in milliseconds. Specifying a negative value in
+ * scifm_poll() will block, in milliseconds. Specifying a negative value in
  * timeout means an infinite timeout.
  *
  * The following bits may be set in events and returned in revents:
  *- SCIF_POLLIN: Data may be received without blocking. For a connected
  *  endpoint, this means that scif_recv() may be called without blocking. For a
- *  listening endpoint, this means that scif_accept() may be called without
+ *  listening endpoint, this means that scifm_accept() may be called without
  *  blocking.
  *- SCIF_POLLOUT: Data may be sent without blocking. For a connected endpoint,
- *  this means that scif_send() may be called without blocking. This bit value
+ *  this means that scifm_send() may be called without blocking. This bit value
  *  has no meaning for a listening endpoint and is ignored if specified.
  *
  * The following bits are only returned in revents, and are ignored if set in
@@ -1614,7 +1614,7 @@ int scif_put_pages(
  *- SCIF_POLLNVAL: The specified endpoint descriptor is invalid.
  *
  *\return
- * Upon successful completion, scif_poll()returns a non-negative value. A
+ * Upon successful completion, scifm_poll()returns a non-negative value. A
  * positive value indicates the total number of endpoint descriptors that have
  * been selected (that is, endpoint descriptors for which the revents member is
  * non-zero. A value of 0 indicates that the call timed out and no endpoint
@@ -1634,8 +1634,8 @@ int scif_put_pages(
  * - There was no space to allocate file descriptor tables.
 */
 int
-scif_poll(
-	struct scif_pollepd *epds,
+scifm_poll(
+	struct scifm_pollepd *epds,
 	unsigned int nepds,
 	long timeout);
 

@@ -1049,7 +1049,7 @@ static struct class ras_class = {
 ** service thread terminates (peer closes session).
 ** The TTL or MC event handler, executing in interrupt context,
 ** will check for an open session and if one is present, deliver
-** their event record(s) on it by using scif_send().
+** their event record(s) on it by using scifm_send().
 **
 ** When CP accept incoming connections, its workqueue task spawns
 ** a new thread to run a session with the peer and then proceeds
@@ -1255,7 +1255,7 @@ micras_cp_sess(void * _slot)
     /*
      * Send response header (always)
      */
-    len = scif_send(ep, &a, sizeof(a), SCIF_SEND_BLOCK);
+    len = scifm_send(ep, &a, sizeof(a), SCIF_SEND_BLOCK);
     if (len < 0) {
       printk("Scif: header send error %d\n", len);
       goto cp_sess_end;
@@ -1269,7 +1269,7 @@ micras_cp_sess(void * _slot)
      * Send payload (if any, defined by a.len)
      */
     if (a.len > 0) {
-      len = scif_send(ep, buf, a.len, SCIF_SEND_BLOCK);
+      len = scifm_send(ep, buf, a.len, SCIF_SEND_BLOCK);
       if (len < 0) {
         printk("Scif: CP payload send error %d\n", len);
         goto cp_sess_end;
@@ -1322,7 +1322,7 @@ micras_cp(struct work_struct * work)
    * Wait for somebody to connect to us
    * We stop listening on any error whatsoever
    */
-  err = scif_accept(micras_cp_lstn, &sess_id, &sess_ep, SCIF_ACCEPT_SYNC);
+  err = scifm_accept(micras_cp_lstn, &sess_id, &sess_ep, SCIF_ACCEPT_SYNC);
   if (err == -EINTR) {
     printk("Scif: CP accept interrupted, error %d\n", err);
     return;
@@ -1455,7 +1455,7 @@ micras_mc(struct work_struct * work)
    * Wait for somebody to connect to us
    * We stop listening on any error whatsoever
    */
-  err = scif_accept(micras_mc_lstn, &sess_id, &sess_ep, SCIF_ACCEPT_SYNC);
+  err = scifm_accept(micras_mc_lstn, &sess_id, &sess_ep, SCIF_ACCEPT_SYNC);
   if (err == -EINTR) {
     printk("Scif: MC accept interrupted, error %d\n", err);
     return;
@@ -1525,18 +1525,18 @@ micras_mc_send(struct mce_info * mce, int exc)
        * other scif communications, but this _is_ an emergency
        * and we _do_ need to ship this message to the host.
        */
-      err = scif_send(micras_mc_ep, mce, sizeof(*mce), SCIF_BLAST);
+      err = scifm_send(micras_mc_ep, mce, sizeof(*mce), SCIF_BLAST);
       if (err != sizeof(*mce))
-        ee_printk("micras_mc_send: scif_send failed, err %d\n", err);
+        ee_printk("micras_mc_send: scifm_send failed, err %d\n", err);
     }
     else {
       /*
        * Thread context SCIF access.
        * Just send message.
        */
-      err = scif_send(micras_mc_ep, mce, sizeof(*mce), SCIF_SEND_BLOCK);
+      err = scifm_send(micras_mc_ep, mce, sizeof(*mce), SCIF_SEND_BLOCK);
       if (err != sizeof(*mce))
-        printk("micras_mc_send: scif_send failed, err %d\n", err);
+        printk("micras_mc_send: scifm_send failed, err %d\n", err);
     }
     return err == sizeof(*mce);
   }
@@ -1608,7 +1608,7 @@ micras_ttl(struct work_struct * work)
    * Wait for somebody to connect to us
    * We stop listening on any error whatsoever
    */
-  err = scif_accept(micras_ttl_lstn, &sess_id, &sess_ep, SCIF_ACCEPT_SYNC);
+  err = scifm_accept(micras_ttl_lstn, &sess_id, &sess_ep, SCIF_ACCEPT_SYNC);
   if (err == -EINTR) {
     printk("Scif: TTL accept interrupted, error %d\n", err);
     return;
@@ -1668,7 +1668,7 @@ micras_ttl_send(struct ttl_info * ttl)
 
     if (split_rem) {
       cp = ((char *) &split_rec) + (sizeof(*ttl) - split_rem);
-      err = scif_send(micras_ttl_ep, cp, split_rem, 0);
+      err = scifm_send(micras_ttl_ep, cp, split_rem, 0);
       if (err == split_rem) {
 	/*
 	 * Tx of pendig buffer complete
@@ -1695,7 +1695,7 @@ micras_ttl_send(struct ttl_info * ttl)
       /*
        * Send message
        */
-      err = scif_send(micras_ttl_ep, ttl, sizeof(*ttl), 0);
+      err = scifm_send(micras_ttl_ep, ttl, sizeof(*ttl), 0);
       if (err != sizeof(*ttl)) {
         /*
 	 * Did not send all the message

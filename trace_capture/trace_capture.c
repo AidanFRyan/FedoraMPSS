@@ -48,8 +48,8 @@ int always_false = 0;
 
 #define BARRIER(epd, string) { \
 	printk("%s\n", string); \
-	if ((err = scif_send(epd, &control_msg, sizeof(control_msg), 1)) <= 0) { \
-	  pr_crit("%s:%s:%d scif_send failed with err %ld\n", __FILE__, __FUNCTION__, __LINE__, err); \
+	if ((err = scifm_send(epd, &control_msg, sizeof(control_msg), 1)) <= 0) { \
+	  pr_crit("%s:%s:%d scifm_send failed with err %ld\n", __FILE__, __FUNCTION__, __LINE__, err); \
 	  goto close;							\
 	} \
 	if ((err = scif_recv(epd, &control_msg, sizeof(control_msg), 1)) <= 0) { \
@@ -1428,11 +1428,11 @@ mictc_capture_memory(void)
 	  }
 	  *g_traceBufferSizeOffset = g_sizeXferred;
 	  printk("before fence\n");
-	  err = scif_fence_signal(mictc_endp_data, (off_t)scif_offset_xml + TRACE_STATUS_OFFSET,
+	  err = scifm_fence_signal(mictc_endp_data, (off_t)scif_offset_xml + TRACE_STATUS_OFFSET,
 				  TRACE_PAGE_READY, 0, 0, SCIF_FENCE_INIT_SELF | SCIF_SIGNAL_LOCAL);
 
 	  if (err < 0) {
-	    printk("scif_fence_signal failed.  err = %ld\n", err);
+	    printk("scifm_fence_signal failed.  err = %ld\n", err);
 	    return 1;
 	  }
 	  printk("TRACE_PAGE_READY %lld bytes\n", g_sizeXferred);
@@ -1634,8 +1634,8 @@ mictc_start_capture(void)
 	portID_data.node = 0;
 	portID_data.port = MICTC_SCIF_PORT_DATA;
 
-	if ((ret = scif_connect(mictc_endp_data, &portID_data)) < 0) {
-		pr_crit("%s:%s:%d scif_connect failed with error %ld\n", __FILE__, __FUNCTION__, __LINE__, ret);
+	if ((ret = scifm_connect(mictc_endp_data, &portID_data)) < 0) {
+		pr_crit("%s:%s:%d scifm_connect failed with error %ld\n", __FILE__, __FUNCTION__, __LINE__, ret);
 		goto done1;
 	}
 
@@ -1678,8 +1678,8 @@ mictc_start_capture(void)
 //	g_traceBufferDataOffset = (u32 *)ret;
 //	pr_crit("%s:%s:%d scif_register ret %lx\n", __FILE__, __FUNCTION__, __LINE__, scif_offset);
 
-	if ((err = scif_send(mictc_endp_data, &scif_offset_xml, sizeof(scif_offset_xml), SCIF_SEND_BLOCK)) <= 0) {
-	  pr_crit("%s:%s:%d scif_send failed with err %ld\n", __FILE__, __FUNCTION__, __LINE__, err);
+	if ((err = scifm_send(mictc_endp_data, &scif_offset_xml, sizeof(scif_offset_xml), SCIF_SEND_BLOCK)) <= 0) {
+	  pr_crit("%s:%s:%d scifm_send failed with err %ld\n", __FILE__, __FUNCTION__, __LINE__, err);
 	  goto close;
 	}
 

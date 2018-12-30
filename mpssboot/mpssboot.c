@@ -102,17 +102,17 @@ set_synctime(struct device *dev, struct device_attribute *attr, const char *buf,
 
 	epd = scifm_open();
 
-	if ((err = scif_connect(epd, &port))) {
+	if ((err = scifm_connect(epd, &port))) {
 		printk("MPSSBOOT error, synctime connect failed: %d\n", err);
 		goto close_synctime;
 	}
 
-	if ((err = scif_send(epd, &version, sizeof(version), 0)) != sizeof(version)) {
+	if ((err = scifm_send(epd, &version, sizeof(version), 0)) != sizeof(version)) {
 		printk("MPSSBOOT send version failed: %d\n", err);
 		goto close_synctime;
 	}
 
-	if ((err = scif_send(epd, &proto, sizeof(proto), 0)) != sizeof(proto)) {
+	if ((err = scifm_send(epd, &proto, sizeof(proto), 0)) != sizeof(proto)) {
 		printk("MPSSBOOT send boot finished failed: %d\n", err);
 		goto close_synctime;
 	}
@@ -159,17 +159,17 @@ set_host_notified(struct device *dev, struct device_attribute *attr, const char 
 
 	epd = scifm_open();
 
-	if ((err = scif_connect(epd, &port))) {
+	if ((err = scifm_connect(epd, &port))) {
 		printk("MPSSBOOT error, notify connect failed: %d\n", err);
 		goto close_notify;
 	}
 
-	if ((err = scif_send(epd, &version, sizeof(version), 0)) != sizeof(version)) {
+	if ((err = scifm_send(epd, &version, sizeof(version), 0)) != sizeof(version)) {
 		printk("MPSSBOOT send version failed: %d\n", err);
 		goto close_notify;
 	}
 
-	if ((err = scif_send(epd, &proto, sizeof(proto), 0)) != sizeof(proto)) {
+	if ((err = scifm_send(epd, &proto, sizeof(proto), 0)) != sizeof(proto)) {
 		printk("MPSSBOOT send boot finished failed: %d\n", err);
 		goto close_notify;
 	}

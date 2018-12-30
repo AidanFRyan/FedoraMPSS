@@ -50,7 +50,7 @@
 
 #define PM_SCIF_RETRY_COUNT 5
 
-DEFINE_RWLOCK(pmscif_send);
+DEFINE_RWLOCK(pmscifm_send);
 
 static atomic_t epinuse = ATOMIC_INIT(0);
 void pm_scif_exit(void);
@@ -123,10 +123,10 @@ pm_send_to_host(PM_MESSAGE opcode, void *msg, size_t len)
 		err = -ENOMEM;
 		goto error;
 	}
-	read_lock_irqsave(&pmscif_send,flags);
+	read_lock_irqsave(&pmscifm_send,flags);
 
 	if (atomic_xchg(&epinuse,1) != 0) {
-		read_unlock_irqrestore(&pmscif_send,flags);
+		read_unlock_irqrestore(&pmscifm_send,flags);
 		kfree(payload);
 		return -1;
 	}
@@ -137,13 +137,13 @@ pm_send_to_host(PM_MESSAGE opcode, void *msg, size_t len)
 		memcpy((char*)payload + sizeof(pm_msg_header), msg, len);
 
 	//0 for non blocking
-	if ((err = scif_send(pm_scif->ep, payload, psize, 0)) < 0) {
+	if ((err = scifm_send(pm_scif->ep, payload, psize, 0)) < 0) {
 		PM_DB("scif_recv failed\n");
 	}
 	atomic_set(&epinuse,0);
 	//for (i = 0; i < psize; i++)
 	//	printk(KERN_ALERT" buff: %X\n", payload[i]);
-	read_unlock_irqrestore(&pmscif_send,flags);
+	read_unlock_irqrestore(&pmscifm_send,flags);
 	kfree(payload);
 //	FUNCTION_EXIT;
 error:
@@ -375,8 +375,8 @@ int pm_scif_init(void)
 	pm_scif->rport_id.node = 0;
 	pm_scif->rport_id.port = SCIF_PM_PORT_0;
 
-	while ((err = scif_connect(pm_scif->ep, &pm_scif->rport_id)) != 0) {
-		PM_DB(" scif_connect failed with err = %d ep %p\n",err,
+	while ((err = scifm_connect(pm_scif->ep, &pm_scif->rport_id)) != 0) {
+		PM_DB(" scifm_connect failed with err = %d ep %p\n",err,
 			pm_scif->ep);
 		msleep(1000);
 		if (retry++ > PM_SCIF_RETRY_COUNT)
@@ -407,9 +407,9 @@ void pm_scif_exit(void)
 	PM_DB("Good Bye!, pm scif \n");
 
 	pm_send_to_host(PM_MESSAGE_CLOSE, NULL, 0);
-	write_lock_irqsave(&pmscif_send,flags);
+	write_lock_irqsave(&pmscifm_send,flags);
 	atomic_set(&epinuse,1);
-	write_unlock_irqrestore(&pmscif_send,flags);
+	write_unlock_irqrestore(&pmscifm_send,flags);
 
 	if (pm_scif) {
 		if(pm_scif->pm_recvq) {

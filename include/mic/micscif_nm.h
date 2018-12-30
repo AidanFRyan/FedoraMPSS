@@ -190,9 +190,9 @@ enum dependency_state {
 };
 
 
-uint64_t micscif_send_pm_rmnode_msg(int node, uint64_t nodemask_addr,
+uint64_t micscifm_send_pm_rmnode_msg(int node, uint64_t nodemask_addr,
 		uint64_t nodemask_size, int orig_node);
-uint64_t micscif_send_lost_node_rmnode_msg(int node, int orig_node);
+uint64_t micscifm_send_lost_node_rmnode_msg(int node, int orig_node);
 
 /* definitions of stack methods used in activation/deactivation set algorithms */
 int init_depgraph_stack(struct list_head *stack_ptr);
@@ -207,11 +207,11 @@ void micscif_update_p2p_state(uint32_t node_id, uint32_t peer_id, enum scif_stat
 
 /* Method responsible for disconnecting node from the scif network */
 int micscif_disconnect_node(uint32_t node_id, uint8_t *nodemask, enum disconn_type type);
-int micscif_connect_node(uint32_t node_id, bool get_ref);
+int micscifm_connect_node(uint32_t node_id, bool get_ref);
 
 void micscif_set_nodedep(uint32_t src_node, uint32_t dst_node, enum dependency_state state);
 enum dependency_state micscif_get_nodedep(uint32_t src_node, uint32_t dst_node);
-uint64_t micscif_send_node_alive(int node);
+uint64_t micscifm_send_node_alive(int node);
 void micscif_watchdog_handler(struct work_struct *work);
 int micscif_handle_lostnode(uint32_t nodeid);
 #endif /*_MIC_SCIF_*/

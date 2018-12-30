@@ -131,7 +131,7 @@ static long estimate_accuracy(struct timespec *tv)
 static void __pollwait(struct file *filp __attribute__((unused)), wait_queue_head_t *wait_address,
 		       poll_table *p);
 
-static void scif_poll_initwait(struct poll_wqueues *pwq)
+static void scifm_poll_initwait(struct poll_wqueues *pwq)
 {
 	init_poll_funcptr(&pwq->pt, __pollwait);
 	pwq->polling_task = current;
@@ -146,7 +146,7 @@ static void free_poll_entry(struct poll_table_entry *entry)
 	remove_wait_queue(entry->wait_address, &entry->wait);
 }
 
-static void scif_poll_freewait(struct poll_wqueues *pwq)
+static void scifm_poll_freewait(struct poll_wqueues *pwq)
 {
 	struct poll_table_page * p = pwq->table;
 	int i;
@@ -277,9 +277,9 @@ int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
 	return rc;
 }
 
-static unsigned int scif_poll_kernel(poll_table *pwait, struct endpt *ep)
+static unsigned int scifm_poll_kernel(poll_table *pwait, struct endpt *ep)
 {
-	return __scif_pollfd(NULL, pwait, ep);
+	return __scifm_pollfd(NULL, pwait, ep);
 }
 
 /*
@@ -289,7 +289,7 @@ static unsigned int scif_poll_kernel(poll_table *pwait, struct endpt *ep)
  * pwait poll_table will be used by the fd-provided poll handler for waiting,
  * if non-NULL.
  */
-static inline unsigned int do_pollfd(struct scif_pollepd *pollfd, poll_table *pwait)
+static inline unsigned int do_pollfd(struct scifm_pollepd *pollfd, poll_table *pwait)
 {
 	unsigned int mask;
 	scif_epd_t epd;
@@ -305,7 +305,7 @@ static inline unsigned int do_pollfd(struct scif_pollepd *pollfd, poll_table *pw
 #else
 			pwait->key = pollfd->events | POLLERR | POLLHUP;
 #endif
-		mask = scif_poll_kernel(pwait, epd);
+		mask = scifm_poll_kernel(pwait, epd);
 		/* Mask out unneeded events. */
 		mask &= pollfd->events | POLLERR | POLLHUP;
 	}
@@ -314,7 +314,7 @@ static inline unsigned int do_pollfd(struct scif_pollepd *pollfd, poll_table *pw
 	return mask;
 }
 
-static int do_poll(unsigned int nfds,  struct scif_pollepd *ufds,
+static int do_poll(unsigned int nfds,  struct scifm_pollepd *ufds,
 		   struct poll_wqueues *wait, struct timespec *end_time)
 {
 	poll_table* pt = &wait->pt;
@@ -374,15 +374,15 @@ static int do_poll(unsigned int nfds,  struct scif_pollepd *ufds,
 	return count;
 }
 
-static int do_scif_poll(struct scif_pollepd *ufds, unsigned int nfds,
+static int do_scifm_poll(struct scifm_pollepd *ufds, unsigned int nfds,
 		struct timespec *end_time)
 {
 	struct poll_wqueues table;
  	int epdcount;
 
-	scif_poll_initwait(&table);
+	scifm_poll_initwait(&table);
 	epdcount = do_poll(nfds, ufds, &table, end_time);
-	scif_poll_freewait(&table);
+	scifm_poll_freewait(&table);
 
 	return epdcount;
 }
@@ -415,7 +415,7 @@ static struct timespec scif_timespec_add_safe(const struct timespec lhs,
  *
  * Returns -EINVAL if sec/nsec are not normalized. Otherwise 0.
  */
-static int scif_poll_select_set_timeout(struct timespec *to, long sec, long nsec)
+static int scifm_poll_select_set_timeout(struct timespec *to, long sec, long nsec)
 {
 	struct timespec ts = {.tv_sec = sec, .tv_nsec = nsec};
 
@@ -432,15 +432,15 @@ static int scif_poll_select_set_timeout(struct timespec *to, long sec, long nsec
 	return 0;
 }
 
-int scif_poll(struct scif_pollepd *ufds, unsigned int nfds, long timeout_msecs)
+int scifm_poll(struct scifm_pollepd *ufds, unsigned int nfds, long timeout_msecs)
 {
 	struct timespec end_time, *to = NULL;
 	if (timeout_msecs >= 0) {
 		to = &end_time;
-		scif_poll_select_set_timeout(to, timeout_msecs / MSEC_PER_SEC,
+		scifm_poll_select_set_timeout(to, timeout_msecs / MSEC_PER_SEC,
 			NSEC_PER_MSEC * (timeout_msecs % MSEC_PER_SEC));
 	}
 
-	return do_scif_poll(ufds, nfds, to);
+	return do_scifm_poll(ufds, nfds, to);
 }
-EXPORT_SYMBOL(scif_poll);
+EXPORT_SYMBOL(scifm_poll);

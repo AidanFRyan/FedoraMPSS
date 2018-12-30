@@ -85,10 +85,10 @@ micscif_mmap(struct file *f, struct vm_area_struct *vma)
 }
 
 unsigned int
-micscif_poll(struct file *f, poll_table *wait)
+micscifm_poll(struct file *f, poll_table *wait)
 {
 	struct mic_priv *priv = (struct mic_priv *)((f)->private_data);
-	return __scif_pollfd(f, wait, (struct endpt *)priv->epd);
+	return __scifm_pollfd(f, wait, (struct endpt *)priv->epd);
 }
 
 int
@@ -170,7 +170,7 @@ scif_process_ioctl(struct file *f, unsigned int cmd, uint64_t arg)
 			return -EFAULT;
 		}
 
-		if ((err = __scif_connect(priv->epd, &req.peer, non_block)) < 0) {
+		if ((err = __scifm_connect(priv->epd, &req.peer, non_block)) < 0) {
 			return err;
 		}
 
@@ -198,7 +198,7 @@ scif_process_ioctl(struct file *f, unsigned int cmd, uint64_t arg)
 			return -EFAULT;
 		}
 
-		if ((err = __scif_accept(priv->epd, &request.peer, ep, request.flags)) < 0) {
+		if ((err = __scifm_accept(priv->epd, &request.peer, ep, request.flags)) < 0) {
 			return err;
 		}
 
@@ -290,7 +290,7 @@ scif_process_ioctl(struct file *f, unsigned int cmd, uint64_t arg)
 		}
 		err = 0;
 send_err:
-		scif_err_debug(err, "scif_send");
+		scif_err_debug(err, "scifm_send");
 		return err;
 	}
 	case SCIF_RECV:
@@ -452,7 +452,7 @@ vwriteto_err:
 			err = -ENOMEM;
 			goto getnodes_err2;
 		}
-		nodeIDs.len = scif_get_nodeIDs(nodes, entries, &self);
+		nodeIDs.len = scifm_get_nodeIDs(nodes, entries, &self);
 
 		if (copy_to_user(nodeIDs.nodes,
 				nodes, sizeof(uint16_t) * entries)) {
@@ -513,10 +513,10 @@ fence_mark_err:
 			goto fence_signal_err;
 		}
 
-		err = __scif_fence_signal(priv->epd, signal.loff,
+		err = __scifm_fence_signal(priv->epd, signal.loff,
 			signal.lval, signal.roff, signal.rval, signal.flags);
 fence_signal_err:
-		scif_err_debug(err, "scif_fence_signal");
+		scif_err_debug(err, "scifm_fence_signal");
 		return err;
 	}
 	case SCIF_GET_VERSION:

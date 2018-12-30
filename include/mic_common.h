@@ -620,7 +620,7 @@ static __always_inline int micpm_get_reference(mic_ctx_t *mic_ctx, bool force_wa
 			}
 		}
 
-		if ((err = micscif_connect_node(mic_get_scifnode_id(mic_ctx), true)) != 0)
+		if ((err = micscifm_connect_node(mic_get_scifnode_id(mic_ctx), true)) != 0)
 			return -ENODEV;
 	}
 	return 0;

@@ -209,7 +209,7 @@ mic_poll(struct file *f, poll_table *wait)
 {
 	dev_t dev = f->f_path.dentry->d_inode->i_rdev;
 	if (MINOR(dev) == 1)
-		return micscif_poll(f, wait);
+		return micscifm_poll(f, wait);
 
 	return -EINVAL;
 }

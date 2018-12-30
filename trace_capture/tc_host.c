@@ -44,8 +44,8 @@
 
 #define BARRIER(epd, string) { \
         printf("%s\n", string); 						\
-	if ((err = scif_send(epd, &control_msg, sizeof(control_msg), 1)) <= 0) { \
-		printf("scif_send failed with err %d\n", errno); \
+	if ((err = scifm_send(epd, &control_msg, sizeof(control_msg), 1)) <= 0) { \
+		printf("scifm_send failed with err %d\n", errno); \
 		fflush(stdout); \
 		goto close; \
 	} \
@@ -155,7 +155,7 @@ int open_scif_channels(void)
 	}
 
 	while (1) {
-		printf("scif_accept in poll mode until a connect request is found\n");
+		printf("scifm_accept in poll mode until a connect request is found\n");
 		err = 1;
 		while (err) {
 			spollfd.fd = scif_get_fd(mictc_epd_data);
@@ -164,13 +164,13 @@ int open_scif_channels(void)
 			if ((err = poll(&spollfd, 1, -1)) < 0) {
 				printf("poll failed with err %d\n", errno);
 			}
-			if (((err = scif_accept(mictc_epd_data, &portID_data, &mictc_newepd, 0)) < 0) && (errno != EAGAIN)) {
-				printf("scif_accept failed with err %d\n", errno);
+			if (((err = scifm_accept(mictc_epd_data, &portID_data, &mictc_newepd, 0)) < 0) && (errno != EAGAIN)) {
+				printf("scifm_accept failed with err %d\n", errno);
 				return 0;
 			}
 		}
 
-		printf("scif_accept from port %d complete\n", portID_data.port);
+		printf("scifm_accept from port %d complete\n", portID_data.port);
 
 		if ((g_mictc_buffer_offset_mem = scif_register(mictc_newepd, g_mictc_buffer_base, MICTC_MEM_BUFFER_SIZE, 0,	// suggested_offset,
 													   SCIF_PROT_READ | SCIF_PROT_WRITE, 0)) < 0) {
@@ -182,19 +182,19 @@ int open_scif_channels(void)
 			   (unsigned long long)g_mictc_buffer_offset_mem);
 		fflush(stdout);
 
-		//  printf("Before scif_send\n");
+		//  printf("Before scifm_send\n");
 		//  fflush(stdout);
 
 		BARRIER(mictc_newepd, "before barrier");
 
 		if ((err =
-			 scif_send(mictc_newepd, &g_mictc_buffer_offset_mem, sizeof(g_mictc_buffer_offset_mem),
+			 scifm_send(mictc_newepd, &g_mictc_buffer_offset_mem, sizeof(g_mictc_buffer_offset_mem),
 					   SCIF_SEND_BLOCK)) <= 0) {
-			printf("scif_send failed with err %d\n", errno);
+			printf("scifm_send failed with err %d\n", errno);
 			fflush(stdout);
 			goto close;
 		}
-		//    BARRIER(mictc_newepd, "scif_send");
+		//    BARRIER(mictc_newepd, "scifm_send");
 
 		//  printf("scif_offset = %lx\n", scif_offset);
 		//  fflush(stdout);

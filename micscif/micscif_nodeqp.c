@@ -288,9 +288,9 @@ error:
 }
 
 #ifdef _MIC_SCIF_
-extern int micscif_send_host_intr(struct micscif_dev *, uint32_t);
+extern int micscifm_send_host_intr(struct micscif_dev *, uint32_t);
 
-int micscif_send_host_intr(struct micscif_dev *dev, uint32_t doorbell)
+int micscifm_send_host_intr(struct micscif_dev *dev, uint32_t doorbell)
 {
 	uint32_t db_reg;
 
@@ -308,7 +308,7 @@ int micscif_send_host_intr(struct micscif_dev *dev, uint32_t doorbell)
  * Interrupts remote mic
  */
 static void
-micscif_send_mic_intr(struct micscif_dev *dev)
+micscifm_send_mic_intr(struct micscif_dev *dev)
 {
 	/* Writes to RDMASR triggers the interrupt */
 	writel(0, (uint8_t *)dev->mm_sbox + dev->sd_rdmasr);
@@ -319,14 +319,14 @@ micscif_send_mic_intr(struct micscif_dev *dev)
  * to target on the remote mic
  */
 static __always_inline void
-scif_send_msg_intr(struct micscif_dev *scifdev)
+scifm_send_msg_intr(struct micscif_dev *scifdev)
 {
 #ifdef _MIC_SCIF_
 	if (scifdev == &scif_dev[0])
-		micscif_send_host_intr(scifdev, 0);
+		micscifm_send_host_intr(scifdev, 0);
 	else
 #endif
-		micscif_send_mic_intr(scifdev);
+		micscifm_send_mic_intr(scifdev);
 }
 
 #ifdef _MIC_SCIF_
@@ -383,7 +383,7 @@ error_exit:
 }
 
 
-void micscif_send_exit(void)
+void micscifm_send_exit(void)
 {
 	struct nodemsg msg;
 	struct micscif_dev *scifdev = &scif_dev[SCIF_HOST_NODE];
@@ -736,7 +736,7 @@ int micscif_nodeqp_send(struct micscif_dev *scifdev,
 
 			queue_work(scifdev->sd_intr_wq, &scifdev->sd_intr_bh);
 		else
-			scif_send_msg_intr(scifdev);
+			scifm_send_msg_intr(scifdev);
 	}
 error:
 	if (err)
@@ -956,7 +956,7 @@ static inline void scif_p2pdev_uninit(struct micscif_dev *peerdev)
 	mutex_unlock(&peerdev->sd_lock);
 }
 
-void scif_poll_qp_state(struct work_struct *work)
+void scifm_poll_qp_state(struct work_struct *work)
 {
 #define NODE_QP_RETRY 100
 	struct micscif_dev *peerdev = container_of(work, struct micscif_dev,
@@ -2044,7 +2044,7 @@ scif_node_wake_up(struct micscif_dev *scifdev, struct nodemsg *msg)
 	 * available in msg->payload[0].
 	 */
 	uint32_t ret = 0;
-	ret = micscif_connect_node((uint32_t)msg->payload[0], false);
+	ret = micscifm_connect_node((uint32_t)msg->payload[0], false);
 
 	if(!ret) {
 		msg->uop = SCIF_NODE_WAKE_UP_ACK;

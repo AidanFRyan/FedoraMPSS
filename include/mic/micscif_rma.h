@@ -415,7 +415,7 @@ struct reg_range_t *micscif_create_remote_window(struct endpt *ep, int nr_pages)
 /* Destroy remote registration window */
 void micscif_destroy_remote_window(struct endpt *ep, struct reg_range_t *window);
 
-int micscif_send_alloc_request(struct endpt *ep, struct reg_range_t *window);
+int micscifm_send_alloc_request(struct endpt *ep, struct reg_range_t *window);
 
 /* Prepare a remote registration window */
 int micscif_prep_remote_window(struct endpt *ep, struct reg_range_t *window);
@@ -427,23 +427,23 @@ int micscif_create_remote_lookup(struct endpt *ep, struct reg_range_t *window);
 void micscif_destroy_remote_lookup(struct endpt *ep, struct reg_range_t *window);
 
 /* Send a SCIF_REGISTER message and wait for an ACK */
-int micscif_send_scif_register(struct endpt *ep, struct reg_range_t *window);
+int micscifm_send_scif_register(struct endpt *ep, struct reg_range_t *window);
 
 /* Send a SCIF_UNREGISTER message */
-int micscif_send_scif_unregister(struct endpt *ep, struct reg_range_t *window);
+int micscifm_send_scif_unregister(struct endpt *ep, struct reg_range_t *window);
 
 /* RMA copy API */
 int micscif_rma_copy(scif_epd_t epd, off_t loffset, void *addr, size_t len,
 	off_t roffset, int flags, enum rma_direction dir, bool last_chunk);
 
 /* Sends a remote fence mark request */
-int micscif_send_fence_mark(scif_epd_t epd, int *out_mark);
+int micscifm_send_fence_mark(scif_epd_t epd, int *out_mark);
 
 /* Sends a remote fence wait request */
-int micscif_send_fence_wait(scif_epd_t epd, int mark);
+int micscifm_send_fence_wait(scif_epd_t epd, int mark);
 
 /* Sends a remote fence signal request */
-int micscif_send_fence_signal(scif_epd_t epd, off_t roff, uint64_t rval,
+int micscifm_send_fence_signal(scif_epd_t epd, off_t roff, uint64_t rval,
 		off_t loff, uint64_t lval, int flags);
 
 /* Setup a DMA mark for an endpoint */

@@ -142,7 +142,7 @@ typedef struct _pm_msg_pm_options
 
 #ifndef _MIC_SCIF_
 // PM IOCTLs
-struct pm_scif_send {
+struct pm_scifm_send {
 	struct pm_ioctl_header header;
 	uint32_t length;
 	void *buf;
@@ -154,7 +154,7 @@ struct pm_scif_recv {
 	void *buf;
 };
 
-struct pm_scif_send_check {
+struct pm_scifm_send_check {
 	struct pm_ioctl_header header;
 	uint32_t length;
 	void *buf;

@@ -850,7 +850,7 @@ void micscif_conn_handler(struct work_struct *work)
 }
 
 /**
- * scif_connect() - Request a connection to a remote node
+ * scifm_connect() - Request a connection to a remote node
  * @epd:        The end point address returned from scifm_open()
  * @dst:	Remote note address informtion
  *
@@ -869,7 +869,7 @@ void micscif_conn_handler(struct work_struct *work)
  * terminate this funciton with a signal.  If so a -EINTR will be returned.
  */
 int
-__scif_connect(scif_epd_t epd, struct scif_portID *dst, bool non_block)
+__scifm_connect(scif_epd_t epd, struct scif_portID *dst, bool non_block)
 {
 	struct endpt *ep = (struct endpt *)epd;
 	unsigned long sflags;
@@ -1007,18 +1007,18 @@ connect_simple_unlock1:
 }
 
 int
-scif_connect(scif_epd_t epd, struct scif_portID *dst)
+scifm_connect(scif_epd_t epd, struct scif_portID *dst)
 {
 	int ret;
 	get_kref_count(epd);
-	ret = __scif_connect(epd, dst, false);
+	ret = __scifm_connect(epd, dst, false);
 	put_kref_count(epd);
 	return ret;
 }
-// EXPORT_SYMBOL(scif_connect);
+EXPORT_SYMBOL(scifm_connect);
 
 /**
- * scif_accept() - Accept a connection request from the remote node
+ * scifm_accept() - Accept a connection request from the remote node
  * @epd:        The end point address returned from scifm_open()
  * @peer:       Filled in with pear node and port information
  * @newepd:     New end point created for connection
@@ -1043,7 +1043,7 @@ scif_connect(scif_epd_t epd, struct scif_portID *dst)
  * terminate this funciton with a signal.  If so a -EINTR will be returned.
  */
 int
-__scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t *newepd, int flags)
+__scifm_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t *newepd, int flags)
 {
 	struct endpt *lep = (struct endpt *)epd;
 	struct endpt *cep;
@@ -1116,7 +1116,7 @@ retry_connection:
 	if (!cep) {
 		pr_debug("SCIFAPI accept: ep %p new end point allocation failed\n", lep);
 		err = -ENOMEM;
-		goto scif_accept_error_epalloc;
+		goto scifm_accept_error_epalloc;
 	}
 	spin_lock_init(&cep->lock);
 	mutex_init (&cep->sendlock);
@@ -1129,25 +1129,25 @@ retry_connection:
 	if (!scifdev_alive(cep)) {
 		err = -ENODEV;
 		printk(KERN_ERR "%s %d err %d\n", __func__, __LINE__, err);
-		goto scif_accept_error_qpalloc;
+		goto scifm_accept_error_qpalloc;
 	}
 
 	if (micscif_rma_ep_init(cep) < 0) {
 		pr_debug("SCIFAPI accept: ep %p new %p RMA EP init failed\n", lep, cep);
 		err = -ENOMEM;
-		goto scif_accept_error_qpalloc;
+		goto scifm_accept_error_qpalloc;
 	}
 
 	if ((err = micscif_reserve_dma_chan(cep))) {
 		printk(KERN_ERR "%s %d err %d\n", __func__, __LINE__, err);
-		goto scif_accept_error_qpalloc;
+		goto scifm_accept_error_qpalloc;
 	}
 
 	cep->qp_info.qp = (struct micscif_qp *)kzalloc(sizeof(struct micscif_qp), GFP_KERNEL);
 	if (!cep->qp_info.qp) {
 		printk(KERN_ERR "Port Qp Allocation Failed\n");
 		err = -ENOMEM;
-		goto scif_accept_error_qpalloc;
+		goto scifm_accept_error_qpalloc;
 	}
 
 	cep->qp_info.qp->magic = SCIFEP_MAGIC;
@@ -1159,7 +1159,7 @@ retry_connection:
 		pr_debug("SCIFAPI accept: ep %p new %p micscif_setup_qp_accept %d qp_offset 0x%llx\n", 
 			    lep, cep, err, cep->qp_info.qp_offset);
 		micscif_dec_node_refcnt(cep->remote_dev, 1);
-		goto scif_accept_error_map;
+		goto scifm_accept_error_map;
 	}
 
 	cep->port.node = lep->port.node;
@@ -1182,7 +1182,7 @@ retry_connection:
 
 	micscif_dec_node_refcnt(cep->remote_dev, 1);
 	if (err)
-		goto scif_accept_error_map;
+		goto scifm_accept_error_map;
 retry:
 	err = wait_event_timeout(cep->conwq, 
 		(cep->state != SCIFEP_CONNECTING), NODE_ACCEPT_TIMEOUT);
@@ -1191,7 +1191,7 @@ retry:
 
 	if (!err) {
 		err = -ENODEV;
-		goto scif_accept_error_map;
+		goto scifm_accept_error_map;
 	}
 
 	if (err > 0)
@@ -1234,13 +1234,13 @@ retry:
 	return 0;
 
 	// Error allocating or mapping resources
-scif_accept_error_map:
+scifm_accept_error_map:
 	kfree(cep->qp_info.qp);
 
-scif_accept_error_qpalloc:
+scifm_accept_error_qpalloc:
 	kfree(cep);
 
-scif_accept_error_epalloc:
+scifm_accept_error_epalloc:
 	micscif_inc_node_refcnt(&scif_dev[conreq->msg.src.node], 1);
 	// New reject the connection request due to lack of resources
 	msg.uop = SCIF_CNCT_REJ;
@@ -1257,18 +1257,18 @@ scif_accept_error_epalloc:
 }
 
 int
-scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t *newepd, int flags)
+scifm_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t *newepd, int flags)
 {
 	int ret;
 	get_kref_count(epd);
-	ret = __scif_accept(epd, peer, newepd, flags);
+	ret = __scifm_accept(epd, peer, newepd, flags);
 	if (ret == 0) {
 		kref_init(&((*newepd)->ref_count));
 	}
 	put_kref_count(epd);
 	return ret;
 }
-// EXPORT_SYMBOL(scif_accept);
+EXPORT_SYMBOL(scifm_accept);
 
 /*
  * scif_msg_param_check:
@@ -1276,7 +1276,7 @@ scif_accept(scif_epd_t epd, struct scif_portID *peer, scif_epd_t *newepd, int fl
  * @len:	Length to receive
  * @flags:	Syncronous or asynchronous access
  *
- * Validate parameters for messaging APIs scif_send(..)/scif_recv(..).
+ * Validate parameters for messaging APIs scifm_send(..)/scif_recv(..).
  */
 static inline int
 scif_msg_param_check(scif_epd_t epd, int len, int flags)
@@ -1310,7 +1310,7 @@ err_ret:
 #endif
 
 /**
- * _scif_send() - Send data to connection queue
+ * _scifm_send() - Send data to connection queue
  * @epd:        The end point address returned from scifm_open()
  * @msg:	Address to place data
  * @len:	Length to receive
@@ -1327,7 +1327,7 @@ err_ret:
  * This function may be interrupted by a signal and will return -EINTR.
  */
 int
-_scif_send(scif_epd_t epd, void *msg, int len, int flags)
+_scifm_send(scif_epd_t epd, void *msg, int len, int flags)
 {
 	struct endpt *ep = (struct endpt *)epd;
 	struct nodemsg notif_msg;
@@ -1407,12 +1407,12 @@ _scif_send(scif_epd_t epd, void *msg, int len, int flags)
 				 * Bypass-path; set flag int the host side node_qp
 				 * and ring the doorbell. Host will wake-up all
 				 * listeners, such that the message will be seen.
-				 * Need micscif_send_host_intr() to be non-static.
+				 * Need micscifm_send_host_intr() to be non-static.
 				 */
-				extern int micscif_send_host_intr(struct micscif_dev *, uint32_t);
+				extern int micscifm_send_host_intr(struct micscif_dev *, uint32_t);
 				ep->remote_dev->qpairs->remote_qp->blast = 1;
 				smp_wmb();    /* Sufficient or need sfence? */
-				micscif_send_host_intr(ep->remote_dev, 0);
+				micscifm_send_host_intr(ep->remote_dev, 0);
 			} else {
 				/*
 				 * Normal path: send notification on the
@@ -1494,7 +1494,7 @@ dec_return:
  * created by the connection establishment sequence.  It reads the amount
  * of data requested before returning.
  *
- * This function differs from the scif_send() by also returning data if the
+ * This function differs from the scifm_send() by also returning data if the
  * end point is in the disconnected state and data is present.
  *
  * Successful completion returns the number of bytes read.
@@ -1633,7 +1633,7 @@ dec_return:
  * @flags:	Syncronous or asynchronous access
  *
  * This function is called from the driver IOCTL entry point
- * only and is a wrapper for _scif_send().
+ * only and is a wrapper for _scifm_send().
  */
 int
 scif_user_send(scif_epd_t epd, void *msg, int len, int flags)
@@ -1673,7 +1673,7 @@ scif_user_send(scif_epd_t epd, void *msg, int len, int flags)
 			err = -EFAULT;
 			goto send_free_err;
 		}
-		err = _scif_send(epd, (void *)tmp, loop_len, flags);
+		err = _scifm_send(epd, (void *)tmp, loop_len, flags);
 		if (err < 0) {
 			goto send_free_err;
 		}
@@ -1760,17 +1760,17 @@ recv_err:
 #endif
 
 /**
- * scif_send() - Send data to connection queue
+ * scifm_send() - Send data to connection queue
  * @epd:        The end point address returned from scifm_open()
  * @msg:	Address to place data
  * @len:	Length to receive
  * @flags:	Syncronous or asynchronous access
  *
  * This function is called from the kernel mode only and is
- * a wrapper for _scif_send().
+ * a wrapper for _scifm_send().
  */
 int
-__scif_send(scif_epd_t epd, void *msg, int len, int flags)
+__scifm_send(scif_epd_t epd, void *msg, int len, int flags)
 {
 	struct endpt *ep = (struct endpt *)epd;
 	int ret;
@@ -1814,12 +1814,12 @@ __scif_send(scif_epd_t epd, void *msg, int len, int flags)
 	 * Grab the mutex lock in the blocking case only
 	 * to ensure messages do not get fragmented/reordered.
 	 * The non blocking mode is protected using spin locks
-	 * in _scif_send().
+	 * in _scifm_send().
 	 */
 	if (flags & SCIF_SEND_BLOCK)
 		mutex_lock(&ep->sendlock);
 
-	ret = _scif_send(epd, msg, len, flags);
+	ret = _scifm_send(epd, msg, len, flags);
 
 	if (flags & SCIF_SEND_BLOCK)
 		mutex_unlock(&ep->sendlock);
@@ -1829,15 +1829,15 @@ __scif_send(scif_epd_t epd, void *msg, int len, int flags)
 }
 
 int
-scif_send(scif_epd_t epd, void *msg, int len, int flags)
+scifm_send(scif_epd_t epd, void *msg, int len, int flags)
 {
 	int ret;
 	get_kref_count(epd);
-	ret = __scif_send(epd, msg, len, flags);
+	ret = __scifm_send(epd, msg, len, flags);
 	put_kref_count(epd);
 	return ret;
 }
-// EXPORT_SYMBOL(scif_send);
+EXPORT_SYMBOL(scifm_send);
 
 /**
  * scif_recv() - Recieve data from connection queue
@@ -1877,7 +1877,7 @@ __scif_recv(scif_epd_t epd, void *msg, int len, int flags)
 	 * Grab the mutex lock in the blocking case only
 	 * to ensure messages do not get fragmented/reordered.
 	 * The non blocking mode is protected using spin locks
-	 * in _scif_send().
+	 * in _scifm_send().
 	 */
 	if (flags & SCIF_RECV_BLOCK)
 		mutex_lock(&ep->recvlock);
@@ -2171,7 +2171,7 @@ __scif_register_pinned_pages(scif_epd_t epd,
 
 	micscif_inc_node_refcnt(ep->remote_dev, 1);
 
-	if ((err = micscif_send_alloc_request(ep, window))) {
+	if ((err = micscifm_send_alloc_request(ep, window))) {
 		micscif_dec_node_refcnt(ep->remote_dev, 1);
 		printk(KERN_ERR "%s %d err %d\n", __func__, __LINE__, err);
 		goto error_unmap;
@@ -2186,7 +2186,7 @@ __scif_register_pinned_pages(scif_epd_t epd,
 	}
 
 	/* Tell the peer about the new window */
-	if ((err = micscif_send_scif_register(ep, window))) {
+	if ((err = micscifm_send_scif_register(ep, window))) {
 		micscif_dec_node_refcnt(ep->remote_dev, 1);
 		printk(KERN_ERR "%s %d err %d\n", __func__, __LINE__, err);
 		goto error_unmap;
@@ -2565,7 +2565,7 @@ __scif_register(scif_epd_t epd, void *addr, size_t len, off_t offset,
 
 	window->nr_pages = len >> PAGE_SHIFT;
 
-	if ((err = micscif_send_alloc_request(ep, window))) {
+	if ((err = micscifm_send_alloc_request(ep, window))) {
 		micscif_destroy_incomplete_window(ep, window);
 		micscif_dec_node_refcnt(ep->remote_dev, 1);
 		return err;
@@ -2599,7 +2599,7 @@ __scif_register(scif_epd_t epd, void *addr, size_t len, off_t offset,
 	}
 
 	/* Tell the peer about the new window */
-	if ((err = micscif_send_scif_register(ep, window))) {
+	if ((err = micscifm_send_scif_register(ep, window))) {
 		micscif_dec_node_refcnt(ep->remote_dev, 1);
 		printk(KERN_ERR "%s %d err %ld\n", __func__, __LINE__, err);
 		goto error_unmap;
@@ -2707,16 +2707,16 @@ scif_unregister(scif_epd_t epd, off_t offset, size_t len)
 }
 // EXPORT_SYMBOL(scif_unregister);
 
-unsigned int scif_pollfd(struct file *f, poll_table *wait, scif_epd_t epd)
+unsigned int scifm_pollfd(struct file *f, poll_table *wait, scif_epd_t epd)
 {
 	unsigned int ret;
 	get_kref_count(epd);
-	ret = __scif_pollfd(f, wait, (struct endpt *)epd);
+	ret = __scifm_pollfd(f, wait, (struct endpt *)epd);
 	put_kref_count(epd);
 	return ret;
 }
 
-unsigned int __scif_pollfd(struct file *f, poll_table *wait, struct endpt *ep)
+unsigned int __scifm_pollfd(struct file *f, poll_table *wait, struct endpt *ep)
 {
 	unsigned int mask = 0;
 	unsigned long sflags;
@@ -2738,7 +2738,7 @@ unsigned int __scif_pollfd(struct file *f, poll_table *wait, struct endpt *ep)
 			ep->conn_err) {
 			mask |= SCIF_POLLOUT;
 		}
-		goto return_scif_poll;
+		goto return_scifm_poll;
 		}
 	}
 
@@ -2757,7 +2757,7 @@ unsigned int __scif_pollfd(struct file *f, poll_table *wait, struct endpt *ep)
 		} else {
 			mask |= SCIF_POLLERR;
 		}
-		goto return_scif_poll;
+		goto return_scifm_poll;
 	}
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
@@ -2769,7 +2769,7 @@ unsigned int __scif_pollfd(struct file *f, poll_table *wait, struct endpt *ep)
 		    ep->state != SCIFEP_LISTENING &&
 		    ep->state != SCIFEP_DISCONNECTED) {
 			mask |= SCIF_POLLERR;
-			goto return_scif_poll;
+			goto return_scifm_poll;
 		}
 
 		spin_unlock_irqrestore(&ep->lock, sflags);
@@ -2787,7 +2787,7 @@ unsigned int __scif_pollfd(struct file *f, poll_table *wait, struct endpt *ep)
 		if (ep->state != SCIFEP_CONNECTED &&
 		    ep->state != SCIFEP_LISTENING) {
 			mask |= SCIF_POLLERR;
-			goto return_scif_poll;
+			goto return_scifm_poll;
 		}
 
 		spin_unlock_irqrestore(&ep->lock, sflags);
@@ -2797,7 +2797,7 @@ unsigned int __scif_pollfd(struct file *f, poll_table *wait, struct endpt *ep)
 			mask |= SCIF_POLLOUT;
 	}
 
-return_scif_poll:
+return_scifm_poll:
 	/* If the endpoint is in the diconnected state then return hangup instead of error */
 	if (ep->state == SCIFEP_DISCONNECTED) {
 		mask &= ~SCIF_POLLERR;
@@ -3147,7 +3147,7 @@ int __scif_fence_mark(scif_epd_t epd, int flags, int *mark)
 			err = *mark;
 	} else {
 		micscif_inc_node_refcnt(ep->remote_dev, 1);
-		err = micscif_send_fence_mark(ep, mark);
+		err = micscifm_send_fence_mark(ep, mark);
 		micscif_dec_node_refcnt(ep->remote_dev, 1);
 	}
 	if (err)
@@ -3205,7 +3205,7 @@ int __scif_fence_wait(scif_epd_t epd, int mark)
 #endif
 	if (mark & SCIF_REMOTE_FENCE) {
 		micscif_inc_node_refcnt(ep->remote_dev, 1);
-		err = micscif_send_fence_wait(epd, mark);
+		err = micscifm_send_fence_wait(epd, mark);
 		micscif_dec_node_refcnt(ep->remote_dev, 1);
 	} else {
 		err = dma_mark_wait(epd->rma_info.dma_chan, mark, true);
@@ -3229,23 +3229,23 @@ int scif_fence_wait(scif_epd_t epd, int mark)
 // EXPORT_SYMBOL(scif_fence_wait);
 
 /*
- * scif_fence_signal:
+ * scifm_fence_signal:
  * @loff:	local offset
  * @lval:	local value to write to loffset
  * @roff:	remote offset
  * @rval:	remote value to write to roffset
  * @flags:	flags
  *
- * scif_fence_signal() returns after marking the current set of all
+ * scifm_fence_signal() returns after marking the current set of all
  * uncompleted RMAs initiated through the endpoint epd or marking
  * the current set of all uncompleted RMAs initiated through the peer
  * of endpoint epd.
  *
  * Return Values
- * 	Upon successful completion, scif_fence_signal() returns 0;
+ * 	Upon successful completion, scifm_fence_signal() returns 0;
  *	else an apt error is returned as documented in scif.h.
  */
-int __scif_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval,
+int __scifm_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval,
 				off_t roff, uint64_t rval, int flags)
 {
 	struct endpt *ep = (struct endpt *)epd;
@@ -3285,7 +3285,7 @@ int __scif_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval,
 
 	if (flags & SCIF_FENCE_INIT_PEER) {
 		micscif_inc_node_refcnt(ep->remote_dev, 1);
-		err = micscif_send_fence_signal(epd, roff,
+		err = micscifm_send_fence_signal(epd, roff,
 			rval, loff, lval, flags);
 		micscif_dec_node_refcnt(ep->remote_dev, 1);
 	} else {
@@ -3311,29 +3311,29 @@ error_ret:
 	return err;
 }
 
-int scif_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval,
+int scifm_fence_signal(scif_epd_t epd, off_t loff, uint64_t lval,
 				off_t roff, uint64_t rval, int flags)
 {
 	int ret;
 	get_kref_count(epd);
-	ret = __scif_fence_signal(epd, loff, lval, roff, rval, flags);
+	ret = __scifm_fence_signal(epd, loff, lval, roff, rval, flags);
 	put_kref_count(epd);
 	return ret;
 }
-// EXPORT_SYMBOL(scif_fence_signal);
+EXPORT_SYMBOL(scifm_fence_signal);
 
 /**
- * scif_get_nodeIDs - Return information about online nodes
+ * scifm_get_nodeIDs - Return information about online nodes
  * @nodes: array space reserved for returning online node IDs
  * @len: number of entries on the nodes array
  * @self: address to place the node ID of this system
  *
  * Return Values
- *	scif_get_nodeIDs() returns the total number of scif nodes
+ *	scifm_get_nodeIDs() returns the total number of scif nodes
  *	(including host) in the system
  */
 int
-scif_get_nodeIDs(uint16_t *nodes, int len, uint16_t *self)
+scifm_get_nodeIDs(uint16_t *nodes, int len, uint16_t *self)
 {
 	int online = 0;
 	int offset = 0;
@@ -3359,7 +3359,7 @@ scif_get_nodeIDs(uint16_t *nodes, int len, uint16_t *self)
 	return online;
 }
 
-// EXPORT_SYMBOL(scif_get_nodeIDs);
+EXPORT_SYMBOL(scifm_get_nodeIDs);
 
 /**
  * micscif_pci_dev:
@@ -3444,7 +3444,7 @@ int scif_pci_info(uint16_t node, struct scif_pci_info *dev)
 	return micscif_pci_info(node, dev);
 #endif
 }
-// EXPORT_SYMBOL(scif_pci_info);
+EXPORT_SYMBOL(scif_pci_info);
 
 /*
  * DEBUG helper functions

@@ -481,7 +481,7 @@ bool nodemask_isvalid(uint8_t* nodemask) {
 
 #ifndef _MIC_SCIF_
 /*
- * micscif_send_rmnode_msg:
+ * micscifm_send_rmnode_msg:
  *
  * @mask: Bitmask of nodes in the deactivation set.
  * @node: Destination node for a deactivation set.
@@ -493,7 +493,7 @@ bool nodemask_isvalid(uint8_t* nodemask) {
  * deactivation set from the Host and waits for a response.
  * Returns the response mask received from the node.
  */
-uint64_t micscif_send_pm_rmnode_msg(int node, uint64_t nodemask_addr,
+uint64_t micscifm_send_pm_rmnode_msg(int node, uint64_t nodemask_addr,
 		uint64_t nodemask_size, int orig_node) {
 
 	uint64_t ret;
@@ -526,7 +526,7 @@ uint64_t micscif_send_pm_rmnode_msg(int node, uint64_t nodemask_addr,
 	return ret;
 }
 
-uint64_t micscif_send_lost_node_rmnode_msg(int node, int orig_node) {
+uint64_t micscifm_send_lost_node_rmnode_msg(int node, int orig_node) {
 	uint64_t ret;
 	struct nodemsg notif_msg;
 	struct micscif_dev *dev = &scif_dev[node];
@@ -1224,7 +1224,7 @@ int micscif_execute_disconnect(uint32_t node_id,
 	/* Always send rmnode msg to SCIF_HOST_NODE */
 	memcpy(mic_data.dd_pm.nodemask, nodemask, 
 			mic_data.dd_pm.nodemask_len);
-	ret = (int) micscif_send_pm_rmnode_msg(SCIF_HOST_NODE, 0, mic_data.dd_pm.nodemask_len,
+	ret = (int) micscifm_send_pm_rmnode_msg(SCIF_HOST_NODE, 0, mic_data.dd_pm.nodemask_len,
 			node_id);
 	/* Add this node to msg list. */
 	if(!ret) {
@@ -1268,7 +1268,7 @@ int micscif_execute_disconnect(uint32_t node_id,
 
 			memcpy(send_rmnode_ctx->micpm_ctx.nodemask.va, nodemask, 
 				send_rmnode_ctx->micpm_ctx.nodemask.len);
-			ret = (int) micscif_send_pm_rmnode_msg(p2p->ppi_peer_id,
+			ret = (int) micscifm_send_pm_rmnode_msg(p2p->ppi_peer_id,
 				send_rmnode_ctx->micpm_ctx.nodemask.pa,
 				send_rmnode_ctx->micpm_ctx.nodemask.len,node_id);
 
@@ -1376,7 +1376,7 @@ int micscif_disconnect_node(uint32_t node_id, uint8_t *nodemask, enum disconn_ty
 		atomic_set(&mic_ctx->disconn_rescnt, 0);
 
 		for (i = 0; ((i <= ms_info.mi_maxid) && (i != node_id)); i++) {
-			ret = (int)micscif_send_lost_node_rmnode_msg(i, node_id);
+			ret = (int)micscifm_send_lost_node_rmnode_msg(i, node_id);
 			if(!ret)
 				msg_cnt++;
 			if((ret == 0)||(ret == -ENODEV)) {
@@ -1407,12 +1407,12 @@ int micscif_disconnect_node(uint32_t node_id, uint8_t *nodemask, enum disconn_ty
  * returns error if node can not be connected from the network.
  */
 int
-micscif_connect_node(uint32_t node_id, bool get_ref)
+micscifm_connect_node(uint32_t node_id, bool get_ref)
 {
 	return do_idlestate_exit(get_per_dev_ctx(node_id - 1), get_ref);
 }
 
-uint64_t micscif_send_node_alive(int node)
+uint64_t micscifm_send_node_alive(int node)
 {
 	struct nodemsg alive_msg;
 	struct micscif_dev *dev = &scif_dev[node];
@@ -1589,7 +1589,7 @@ void micscif_watchdog_handler(struct work_struct *work)
 
 	if (1 != atomic_cmpxchg(&dev->sd_node_alive, 1, 0)) {
 
-		err = (int)(micscif_send_node_alive(i));
+		err = (int)(micscifm_send_node_alive(i));
 
 		if (err) {
 			micpm_put_reference(mic_ctx);
